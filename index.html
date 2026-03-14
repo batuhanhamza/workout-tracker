@@ -444,7 +444,13 @@ function startWorkout(){
       
       const currentSets = Array.from({length: parseInt(ex.sets)||3}, (_, i) => {
         const pSet = prevSets[i] || {};
-        return { type: '1', kg: '', reps: '', prevKg: pSet.kg||'', prevReps: pSet.reps||'', checked: false };
+        
+        // Önceki kg varsa koy, yoksa boş.
+        const defaultKg = pSet.kg || ''; 
+        // Önceki tekrar varsa koy, yoksa programdaki hedefi (örn: "8-10" içinden "8"i) sayı olarak koy
+        const defaultReps = pSet.reps || parseInt(ex.reps) || '';
+
+        return { type: '1', kg: defaultKg, reps: defaultReps, prevKg: pSet.kg||'', prevReps: pSet.reps||'', checked: false };
       });
       return { id: ex.id, name: ex.name, muscle: ex.muscle, trackType: ex.trackType||'weight', defaultReps: ex.reps, sets: currentSets };
     })
@@ -499,10 +505,21 @@ function renderActiveWorkout(){
     let col2Label = ex.trackType==='weight' ? 'Kg' : (ex.trackType==='bw' ? '—' : '—');
     let col3Label = ex.trackType==='time' ? 'Süre' : 'Tekrar';
     
+    // PR (Maks Rekor) Hesaplama
+    const prVal = getMaxValForExercise(ex.name, ex.trackType);
+    let prText = '';
+    if (prVal > 0) {
+      prText = ex.trackType === 'time' ? `${prVal} sn` : (ex.trackType === 'bw' ? `${prVal} rep` : `${prVal} kg`);
+    }
+    const prBadgeHtml = prVal > 0 ? `<div style="font-size:12px; color:#D4AF37; margin-top:4px; font-weight:700;">🏆 Maks Rekor: ${prText}</div>` : '';
+    
     return `
     <div class="ex-card ${exIdx===0 ? 'open' : ''}" id="ex-card-${exIdx}">
       <div class="ex-card-header" onclick="this.parentElement.classList.toggle('open')">
-        <span>${ex.name}</span>
+        <div>
+          <span style="font-size:15px;">${ex.name}</span>
+          ${prBadgeHtml}
+        </div>
         <span style="font-size:12px;color:var(--accent)">${ex.sets.filter(s=>s.checked).length}/${ex.sets.length} Set</span>
       </div>
       <div class="ex-card-body">
@@ -587,14 +604,10 @@ function toggleSetCheck(exIdx, setIdx){
   if(set.checked){
     set.checked = false;
   } else {
-    if(ex.trackType === 'weight' && !set.kg){
-      const ph = document.getElementById(`kg-${exIdx}-${setIdx}`).placeholder;
-      set.kg = ph !== '0' ? ph : '0';
-    }
-    if(!set.reps){
-      const ph = document.getElementById(`rep-${exIdx}-${setIdx}`).placeholder;
-      set.reps = ph !== 'sn' ? ph : '0';
-    }
+    // Kullanıcı içini silip boş bıraktıysa hata vermemesi için "0" yap
+    if(ex.trackType === 'weight' && !set.kg) set.kg = '0';
+    if(!set.reps) set.reps = '0';
+    
     set.checked = true;
     startRestTimer(90); 
     if(setIdx === ex.sets.length - 1 && exIdx < activeSession.exercises.length - 1) document.getElementById(`ex-card-${exIdx+1}`).classList.add('open');
