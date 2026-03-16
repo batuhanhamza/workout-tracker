@@ -35,8 +35,7 @@
   }
 }
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:100px;font-size:15px;line-height:1.5;overflow-x:hidden;}
-/* FONT SIZE 16PX CRITICAL FOR iOS ZOOM FIX */
-input, button, select, textarea {font-family:inherit; font-size:16px !important;}
+input, button, select, textarea {font-family:inherit; font-size:16px !important;} /* iOS Zoom Fix */
 
 /* Navbar & Topbar */
 .topbar{position:sticky;top:0;z-index:100;background:rgba(var(--bg), 0.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
@@ -61,15 +60,16 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 .btn-icon{background:none;border:none;color:var(--muted);cursor:pointer;padding:8px;border-radius:8px;}
 .btn-icon:hover{color:var(--text);background:var(--surface2)}
 
-.day-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none}
-.day-tabs::-webkit-scrollbar{display:none}
-.day-pill{padding:8px 18px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--muted);transition:all 0.2s}
+/* Wrap özelliği ile kaydırma engellendi, hepsi ekrana sığacak */
+.day-tabs{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:8px;margin-bottom:12px;}
+.day-pill{padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);transition:all 0.2s;flex-grow:1;text-align:center;}
 .day-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:var(--info-light);color:var(--info);margin-top:4px}
 
 /* Active Workout Tracker */
 .workout-header{background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);padding:16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 0 0 2px var(--accent-light)}
-.timer-text{font-family:'DM Mono',monospace;font-size:24px;font-weight:700;color:var(--accent)}
+.timer-text{font-family:'DM Mono',monospace;font-size:24px;font-weight:700;color:var(--accent); transition: color 0.3s;}
+.timer-text.paused{color:var(--warn);}
 
 .ex-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;transition:all 0.3s}
 .ex-card-header{padding:16px;display:flex;justify-content:space-between;align-items:center;background:var(--surface);cursor:pointer;font-weight:600;font-size:15px}
@@ -80,7 +80,6 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 .set-header-grid{display:grid;grid-template-columns:40px 1fr 1fr 45px;gap:8px;padding:8px 0;font-size:11px;color:var(--muted);text-align:center;font-weight:600;text-transform:uppercase}
 .set-row{display:grid;grid-template-columns:40px 1fr 1fr 45px;gap:8px;align-items:center;margin-bottom:8px;padding:6px;border-radius:var(--radius-sm);transition:all 0.2s ease}
 
-/* Full Row Green Highlight when completed */
 .set-row.completed{background:var(--success-light); border:1px solid rgba(52, 199, 89, 0.3);}
 .set-row.completed .set-input{color:var(--success); font-weight:700;}
 .set-row.completed .btn-step{color:var(--success); opacity:0.6;}
@@ -96,7 +95,6 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 .input-group:focus-within{border-color:var(--accent); background:var(--surface);}
 .btn-step{width:32px;height:100%;background:none;border:none;color:var(--muted);font-weight:600;cursor:pointer;font-size:18px}
 .set-input{flex:1;width:100%;height:100%;background:transparent;border:none;text-align:center;font-family:'DM Mono',monospace;font-weight:600;color:var(--text);padding:0}
-.set-input::placeholder{color:var(--muted);opacity:0.5}
 .set-input:focus{outline:none}
 
 .btn-check{width:100%;height:38px;border-radius:var(--radius-sm);border:none;background:var(--surface2);color:var(--muted);font-size:16px;cursor:pointer;transition:all 0.2s}
@@ -120,7 +118,7 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 .history-card.open .history-body{display:block}
 .hist-ex{margin-bottom:12px}
 .hist-ex-name{font-size:13px;font-weight:700;margin-bottom:4px}
-.hist-set{font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;padding:3px 0}
+.hist-set{font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;padding:3px 0; align-items:center;}
 
 /* Stats */
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
@@ -168,10 +166,13 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
         <div style="font-size:13px;font-weight:700;color:var(--muted)" id="active-day-name">Göğüs Günü</div>
         <div class="timer-text" id="workout-timer">00:00</div>
       </div>
-      <button class="btn btn-danger-outline" style="width:auto;padding:8px 16px;font-size:14px" onclick="cancelWorkout()">İptal</button>
+      <div class="flex gap-2">
+        <button id="btn-pause" class="btn" style="background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:8px 12px; font-size:13px; width:auto;" onclick="togglePauseWorkout()">⏸️ Beklet</button>
+        <button class="btn btn-danger-outline" style="width:auto;padding:8px 12px;font-size:13px" onclick="cancelWorkout()">Bitir/İptal</button>
+      </div>
     </div>
     <div id="active-exercises"></div>
-    <button class="btn btn-success" style="margin-top:20px" onclick="finishWorkout()">✅ Antrenmanı Bitir</button>
+    <button class="btn btn-success" style="margin-top:20px" onclick="finishWorkout()">✅ Antrenmanı Kaydet & Bitir</button>
   </div>
 </div>
 
@@ -207,9 +208,23 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
   <button class="btn btn-primary" style="background:var(--accent-light);color:var(--accent);margin-bottom:20px" onclick="addNewDay()">+ Yeni Antrenman Günü Ekle</button>
   
   <div class="card">
-    <div class="stat-label" style="margin-bottom:12px">Veri Yönetimi & Ayarlar</div>
+    <div class="stat-label" style="margin-bottom:12px">Ayarlar</div>
+    <div class="form-group">
+      <label class="form-label">Varsayılan Dinlenme Süresi</label>
+      <select class="form-select" id="setting-rest" onchange="saveSettings()">
+        <option value="60">60 Saniye</option>
+        <option value="90">90 Saniye</option>
+        <option value="120">120 Saniye</option>
+        <option value="150">150 Saniye</option>
+        <option value="180">180 Saniye</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="stat-label" style="margin-bottom:12px">Veri Yönetimi</div>
     <div class="flex gap-2" style="margin-bottom:10px">
-      <button class="btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)" onclick="exportData()">💾 Yedeği İndir</button>
+      <button class="btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)" onclick="exportData()">💾 İndir</button>
       <button class="btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)" onclick="document.getElementById('import-file').click()">📂 Yükle</button>
       <input type="file" id="import-file" style="display:none" accept=".json" onchange="importData(event)">
     </div>
@@ -233,61 +248,42 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
   </div>
   <div class="flex gap-2">
     <button class="btn-rt" onclick="adjustRestTimer(-15)">-15s</button>
-    <button class="btn-rt" onclick="adjustRestTimer(30)">+30s</button>
+    <button class="btn-rt" onclick="adjustRestTimer(15)">+15s</button>
     <button class="btn-rt" style="background:var(--danger-light);color:var(--danger)" onclick="stopRestTimer()">Geç</button>
   </div>
 </div>
 
-<!-- EDIT EXERCISE MODAL -->
+<!-- EDIT EXERCISE MODAL (Program) -->
 <div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-sheet">
     <h3 style="margin-bottom:16px" id="modal-title">Hareketi Düzenle</h3>
-    <input type="hidden" id="edit-dIdx">
-    <input type="hidden" id="edit-eIdx">
-    
-    <div class="form-group">
-      <label class="form-label">Hareket Adı</label>
-      <input type="text" class="form-input" id="edit-name" placeholder="Örn: Bench Press">
-    </div>
-    
+    <input type="hidden" id="edit-dIdx"><input type="hidden" id="edit-eIdx">
+    <div class="form-group"><label class="form-label">Hareket Adı</label><input type="text" class="form-input" id="edit-name"></div>
     <div class="flex gap-2" style="margin-bottom:16px">
-      <div style="flex:1">
-        <label class="form-label">Hedef Set</label>
-        <input type="text" class="form-input" id="edit-sets" placeholder="Örn: 4">
-      </div>
-      <div style="flex:1">
-        <label class="form-label">Hedef Tekrar / Süre</label>
-        <input type="text" class="form-input" id="edit-reps" placeholder="Örn: 8-10">
-      </div>
+      <div style="flex:1"><label class="form-label">Hedef Set</label><input type="text" class="form-input" id="edit-sets"></div>
+      <div style="flex:1"><label class="form-label">Hedef Tekrar / Süre</label><input type="text" class="form-input" id="edit-reps"></div>
     </div>
-    
-    <div class="form-group">
-      <label class="form-label">Takip Tipi (Önemli)</label>
-      <select class="form-select" id="edit-type">
-        <option value="weight">Ağırlık ve Tekrar (KG x Rep)</option>
-        <option value="bw">Sadece Tekrar (Vücut Ağırlığı)</option>
-        <option value="time">Süreli (Saniye)</option>
-      </select>
-    </div>
-    
+    <div class="form-group"><label class="form-label">Takip Tipi</label><select class="form-select" id="edit-type"><option value="weight">Ağırlık ve Tekrar (KG x Rep)</option><option value="bw">Sadece Tekrar (Vücut Ağırlığı)</option><option value="time">Süreli (Saniye)</option></select></div>
     <div class="flex gap-2" style="margin-bottom:16px">
-      <div style="flex:1">
-        <label class="form-label">Kas Grubu</label>
-        <select class="form-select" id="edit-muscle">
-          <option>Göğüs</option><option>Sırt</option><option>Bacak</option>
-          <option>Omuz</option><option>Kol</option><option>Core</option>
-          <option>Kardiyo</option>
-        </select>
-      </div>
-      <div style="flex:1">
-        <label class="form-label">Etiket / Not</label>
-        <input type="text" class="form-input" id="edit-note" placeholder="Örn: home, soft landing">
-      </div>
+      <div style="flex:1"><label class="form-label">Kas Grubu</label><select class="form-select" id="edit-muscle"><option>Göğüs</option><option>Sırt</option><option>Bacak</option><option>Omuz</option><option>Kol</option><option>Core</option><option>Kardiyo</option></select></div>
+      <div style="flex:1"><label class="form-label">Etiket / Not</label><input type="text" class="form-input" id="edit-note" placeholder="home, soft landing"></div>
     </div>
-    
     <div class="flex gap-2" style="margin-top:24px">
       <button class="btn" style="background:var(--surface2);color:var(--text)" onclick="closeModal()">İptal</button>
       <button class="btn btn-primary" onclick="saveExerciseModal()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- SESSION NOTE TOOLTIP MODAL -->
+<div class="modal-overlay" id="note-modal" onclick="if(event.target===this)closeNoteModal()">
+  <div class="modal-sheet">
+    <h3 style="margin-bottom:12px; font-size:16px" id="note-modal-title">Hareket Notu</h3>
+    <div id="prev-note-container" style="color:var(--muted); font-size:13px; font-style:italic; margin-bottom:12px; background:var(--surface2); padding:10px; border-radius:8px; display:none;"></div>
+    <textarea id="current-session-note" rows="3" class="form-input" placeholder="Bugün için notun... (Örn: Sol omuz ağrıdı)"></textarea>
+    <div class="flex gap-2" style="margin-top:16px">
+      <button class="btn" style="background:var(--surface2);color:var(--text)" onclick="closeNoteModal()">Kapat</button>
+      <button class="btn btn-primary" onclick="saveSessionNote()">Notu Kaydet</button>
     </div>
   </div>
 </div>
@@ -342,6 +338,7 @@ const DEFAULT_PROGRAM =[
   ]}
 ];
 
+// --- CORE DATA SYSTEM ---
 function loadData(){ return JSON.parse(localStorage.getItem('wt_logs') || '[]'); }
 function saveData(logs){ localStorage.setItem('wt_logs', JSON.stringify(logs)); }
 function loadProgram(){ return JSON.parse(localStorage.getItem('wt_prog') || JSON.stringify(DEFAULT_PROGRAM)); }
@@ -350,6 +347,15 @@ function saveProgram(p){ localStorage.setItem('wt_prog', JSON.stringify(p)); }
 let logs = loadData();
 let program = loadProgram();
 let currentDayId = program[0]?.id;
+
+// Settings
+let settings = JSON.parse(localStorage.getItem('wt_settings')) || { defaultRest: 90 };
+document.getElementById('setting-rest').value = settings.defaultRest;
+function saveSettings(){ 
+  settings.defaultRest = parseInt(document.getElementById('setting-rest').value); 
+  localStorage.setItem('wt_settings', JSON.stringify(settings));
+  showToast("Ayarlar kaydedildi ✓");
+}
 
 const todayStr = () => new Date().toISOString().split('T')[0];
 const showToast = (msg) => {
@@ -361,9 +367,6 @@ const showToast = (msg) => {
 // Nav Routing
 document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
-    if(isWorkoutActive && btn.dataset.page !== 'workout'){
-      if(!confirm("Aktif bir antrenmanın var. Arka planda çalışmaya devam edecek. Geçmek istiyor musun?")) return;
-    }
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -380,9 +383,13 @@ document.querySelectorAll('.nav-item').forEach(btn => {
 });
 document.getElementById('topbar-sub').textContent = new Date().toLocaleDateString('tr-TR', {weekday:'long', day:'numeric', month:'long'});
 
-// --- WORKOUT TAB ---
+// --- PRE-WORKOUT TAB ---
 function renderPreWorkout(){
-  if(isWorkoutActive) return; 
+  if(isWorkoutActive) {
+    document.getElementById('pre-workout-ui').style.display = 'none';
+    document.getElementById('active-workout-ui').style.display = 'block';
+    return;
+  }
   document.getElementById('pre-workout-ui').style.display = 'block';
   document.getElementById('active-workout-ui').style.display = 'none';
   
@@ -416,84 +423,139 @@ function renderPreWorkout(){
 
 // --- ACTIVE WORKOUT ---
 let isWorkoutActive = false;
-let workoutStartTime = null;
 let workoutTimerInterval = null;
 let activeSession = null; 
 
+// Recovery Check on Load
+const savedSession = localStorage.getItem('wt_active_session');
+if(savedSession){
+  activeSession = JSON.parse(savedSession);
+  isWorkoutActive = true;
+  document.getElementById('pre-workout-ui').style.display = 'none';
+  document.getElementById('active-workout-ui').style.display = 'block';
+  document.getElementById('active-day-name').textContent = activeSession.dayName + (activeSession.dayNote ? ` (${activeSession.dayNote})` : '');
+  if(activeSession.isPaused){
+    document.getElementById('btn-pause').innerHTML = '▶️ Devam Et';
+    document.getElementById('workout-timer').textContent = "BEKLETİLDİ";
+    document.getElementById('workout-timer').classList.add('paused');
+  } else {
+    startWorkoutClock();
+  }
+  renderActiveWorkout();
+}
+
+function persistSession(){
+  if(isWorkoutActive) localStorage.setItem('wt_active_session', JSON.stringify(activeSession));
+  else localStorage.removeItem('wt_active_session');
+}
+
 function startWorkout(){
   isWorkoutActive = true;
-  workoutStartTime = Date.now();
   const day = program.find(d => d.id === currentDayId);
   
   document.getElementById('pre-workout-ui').style.display = 'none';
   document.getElementById('active-workout-ui').style.display = 'block';
   document.getElementById('active-day-name').textContent = day.name + (day.note ? ` (${day.note})` : '');
-  
-  workoutTimerInterval = setInterval(() => {
-    const diff = Math.floor((Date.now() - workoutStartTime) / 1000);
-    const m = String(Math.floor(diff / 60)).padStart(2, '0');
-    const s = String(diff % 60).padStart(2, '0');
-    document.getElementById('workout-timer').textContent = `${m}:${s}`;
-  }, 1000);
+  document.getElementById('btn-pause').innerHTML = '⏸️ Beklet';
+  document.getElementById('workout-timer').classList.remove('paused');
 
   activeSession = {
-    logId: 'log_' + Date.now(), dayId: day.id, dayName: day.name, date: todayStr(), startTime: workoutStartTime,
+    logId: 'log_' + Date.now(), dayId: day.id, dayName: day.name, dayNote: day.note,
+    date: todayStr(), startTimeMs: Date.now(), totalPausedMs: 0, isPaused: false,
     exercises: day.exercises.map(ex => {
       const prevLog = [...logs].reverse().find(l => l.exercises.some(e => e.id === ex.id));
       const prevSets = prevLog ? prevLog.exercises.find(e => e.id === ex.id).sets :[];
       
       const currentSets = Array.from({length: parseInt(ex.sets)||3}, (_, i) => {
         const pSet = prevSets[i] || {};
-        
-        // Önceki kg varsa koy, yoksa boş.
         const defaultKg = pSet.kg || ''; 
-        // Önceki tekrar varsa koy, yoksa programdaki hedefi (örn: "8-10" içinden "8"i) sayı olarak koy
         const defaultReps = pSet.reps || parseInt(ex.reps) || '';
-
         return { type: '1', kg: defaultKg, reps: defaultReps, prevKg: pSet.kg||'', prevReps: pSet.reps||'', checked: false };
       });
-      return { id: ex.id, name: ex.name, muscle: ex.muscle, trackType: ex.trackType||'weight', defaultReps: ex.reps, sets: currentSets };
+      return { id: ex.id, name: ex.name, muscle: ex.muscle, trackType: ex.trackType||'weight', defaultReps: ex.reps, sessionNote: '', sets: currentSets };
     })
   };
+  persistSession();
+  startWorkoutClock();
   renderActiveWorkout();
 }
 
+function startWorkoutClock(){
+  if(workoutTimerInterval) clearInterval(workoutTimerInterval);
+  workoutTimerInterval = setInterval(() => {
+    if(activeSession.isPaused) return;
+    const elapsedMs = Date.now() - activeSession.startTimeMs - activeSession.totalPausedMs;
+    const diff = Math.floor(elapsedMs / 1000);
+    const m = String(Math.floor(diff / 60)).padStart(2, '0');
+    const s = String(diff % 60).padStart(2, '0');
+    document.getElementById('workout-timer').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function togglePauseWorkout(){
+  if(activeSession.isPaused){
+    // Resume
+    activeSession.isPaused = false;
+    activeSession.totalPausedMs += (Date.now() - activeSession.pauseStartMs);
+    document.getElementById('btn-pause').innerHTML = '⏸️ Beklet';
+    document.getElementById('workout-timer').classList.remove('paused');
+    startWorkoutClock();
+  } else {
+    // Pause
+    activeSession.isPaused = true;
+    activeSession.pauseStartMs = Date.now();
+    clearInterval(workoutTimerInterval);
+    document.getElementById('btn-pause').innerHTML = '▶️ Devam Et';
+    document.getElementById('workout-timer').textContent = "BEKLETİLDİ";
+    document.getElementById('workout-timer').classList.add('paused');
+    stopRestTimer(); // Stop rest timer if paused
+  }
+  persistSession();
+}
+
 function cancelWorkout(){
-  if(!confirm("Antrenmanı iptal etmek istiyor musun? Kaydedilmeyecek.")) return;
-  isWorkoutActive = false;
-  clearInterval(workoutTimerInterval);
-  stopRestTimer();
-  renderPreWorkout();
+  if(confirm("Antrenmanı bitirmek (veya iptal etmek) istiyor musun? Onaylarsan ana sayfaya döner.")){
+    isWorkoutActive = false;
+    clearInterval(workoutTimerInterval);
+    stopRestTimer();
+    persistSession();
+    renderPreWorkout();
+  }
 }
 
 function finishWorkout(){
   const hasDoneSets = activeSession.exercises.some(ex => ex.sets.some(s => s.checked));
   if(!hasDoneSets){ showToast("Hiçbir set kaydetmedin!"); return; }
   
+  if(activeSession.isPaused){
+    activeSession.totalPausedMs += (Date.now() - activeSession.pauseStartMs);
+    activeSession.isPaused = false;
+  }
+
   activeSession.exercises.forEach(ex => { ex.sets = ex.sets.filter(s => s.checked); });
   activeSession.exercises = activeSession.exercises.filter(ex => ex.sets.length > 0);
-  activeSession.duration = Math.floor((Date.now() - workoutStartTime) / 1000 / 60); 
+  
+  const elapsedMs = Date.now() - activeSession.startTimeMs - activeSession.totalPausedMs;
+  activeSession.duration = Math.floor(elapsedMs / 1000 / 60); 
   
   let totalVolume = 0; let prCount = 0;
   activeSession.exercises.forEach(ex => {
     let maxValInSession = 0;
     ex.sets.forEach(s => {
-      if(ex.trackType === 'weight' && s.type !== 'W'){
-        totalVolume += (parseFloat(s.kg)||0) * (parseInt(s.reps)||0);
-      }
+      if(ex.trackType === 'weight' && s.type !== 'W') totalVolume += (parseFloat(s.kg)||0) * (parseInt(s.reps)||0);
       let val = parseFloat(ex.trackType==='weight' ? s.kg : s.reps) || 0;
       if(val > maxValInSession) maxValInSession = val;
     });
-    
     const pastMax = getMaxValForExercise(ex.name, ex.trackType);
-    if(maxValInSession > pastMax && pastMax > 0) prCount++;
+    if(pastMax !== null && maxValInSession > pastMax) prCount++;
   });
   
   activeSession.volume = totalVolume;
   activeSession.prCount = prCount;
 
   logs.push(activeSession); saveData(logs);
-  isWorkoutActive = false; clearInterval(workoutTimerInterval); stopRestTimer();
+  isWorkoutActive = false; persistSession();
+  clearInterval(workoutTimerInterval); stopRestTimer();
   
   showToast(`Tebrikler! ${totalVolume>0 ? totalVolume+' kg hacim.' : 'Antrenman bitti!'} ${prCount>0 ? '🏆 '+prCount+' PR!' : ''}`);
   document.querySelector('.nav-item[data-page="history"]').click();
@@ -505,22 +567,25 @@ function renderActiveWorkout(){
     let col2Label = ex.trackType==='weight' ? 'Kg' : (ex.trackType==='bw' ? '—' : '—');
     let col3Label = ex.trackType==='time' ? 'Süre' : 'Tekrar';
     
-    // PR (Maks Rekor) Hesaplama
+    // Fake PR Bug Fixed: Returns null if never done before.
     const prVal = getMaxValForExercise(ex.name, ex.trackType);
-    let prText = '';
-    if (prVal > 0) {
-      prText = ex.trackType === 'time' ? `${prVal} sn` : (ex.trackType === 'bw' ? `${prVal} rep` : `${prVal} kg`);
+    let prBadgeHtml = '';
+    if(prVal !== null && prVal > 0){
+       let prText = ex.trackType === 'time' ? `${prVal} sn` : (ex.trackType === 'bw' ? `${prVal} rep` : `${prVal} kg`);
+       prBadgeHtml = `<div style="font-size:12px; color:#D4AF37; margin-top:2px; font-weight:700;">🏆 Maks: ${prText}</div>`;
     }
-    const prBadgeHtml = prVal > 0 ? `<div style="font-size:12px; color:#D4AF37; margin-top:4px; font-weight:700;">🏆 Maks Rekor: ${prText}</div>` : '';
     
+    const noteIconColor = ex.sessionNote ? 'var(--info)' : 'var(--muted)';
+
     return `
     <div class="ex-card ${exIdx===0 ? 'open' : ''}" id="ex-card-${exIdx}">
       <div class="ex-card-header" onclick="this.parentElement.classList.toggle('open')">
         <div>
-          <span style="font-size:15px;">${ex.name}</span>
+          <span style="font-size:15px; font-weight:700;">${ex.name}</span>
+          <button class="btn-icon" style="padding:4px; margin-left:6px; color:${noteIconColor}" onclick="event.stopPropagation(); openNoteModal(${exIdx})">💬</button>
           ${prBadgeHtml}
         </div>
-        <span style="font-size:12px;color:var(--accent)">${ex.sets.filter(s=>s.checked).length}/${ex.sets.length} Set</span>
+        <span style="font-size:12px;color:var(--accent)" id="ex-set-count-${exIdx}">${ex.sets.filter(s=>s.checked).length}/${ex.sets.length} Set</span>
       </div>
       <div class="ex-card-body">
         <div class="set-header-grid">
@@ -545,10 +610,10 @@ function renderSetRow(exIdx, setIdx, set){
   const repPlaceholder = isTime ? 'sn' : (ex.defaultReps.split('-')[0]);
 
   let currentVal = parseFloat(isWeight ? set.kg : set.reps) || 0;
-  const isPr = set.checked && currentVal > getMaxValForExercise(ex.name, ex.trackType);
+  const prVal = getMaxValForExercise(ex.name, ex.trackType);
+  const isPr = set.checked && prVal !== null && currentVal > prVal;
   const prHtml = isPr ? `<div class="pr-badge">🏆</div>` : ``;
 
-  // Focus action with scroll to center for iOS keyboard overlap
   const focusAction = `onfocus="this.select(); setTimeout(() => this.scrollIntoView({behavior:'smooth', block:'center'}), 300);"`;
 
   return `
@@ -556,11 +621,11 @@ function renderSetRow(exIdx, setIdx, set){
       <button class="set-type-btn ${tClass}" onclick="cycleSetType(${exIdx},${setIdx})">${tLabel}</button>
       
       <div class="input-group ${!isWeight ? 'hidden' : ''}">
-        <button class="btn-step" onclick="adjustInput(${exIdx},${setIdx},'kg',-1)">-</button>
+        <button class="btn-step" onclick="adjustInput(${exIdx},${setIdx},'kg',-0.5)">-</button>
         <input type="number" inputmode="decimal" class="set-input" id="kg-${exIdx}-${setIdx}" 
                placeholder="${set.prevKg||'0'}" value="${set.kg}" ${focusAction} 
                onchange="updateSetData(${exIdx},${setIdx},'kg',this.value)" ${set.checked?'disabled':''}>
-        <button class="btn-step" onclick="adjustInput(${exIdx},${setIdx},'kg',1)">+</button>
+        <button class="btn-step" onclick="adjustInput(${exIdx},${setIdx},'kg',0.5)">+</button>
       </div>
 
       <div class="input-group">
@@ -584,6 +649,7 @@ function cycleSetType(exIdx, setIdx){
   const types =['1', 'W', 'D', 'F'];
   const cur = activeSession.exercises[exIdx].sets[setIdx].type;
   activeSession.exercises[exIdx].sets[setIdx].type = types[(types.indexOf(cur) + 1) % types.length];
+  persistSession();
   refreshSetRow(exIdx, setIdx);
 }
 
@@ -595,25 +661,31 @@ function adjustInput(exIdx, setIdx, field, amount){
   input.value = field==='kg' ? val.toFixed(1).replace('.0','') : Math.round(val);
   updateSetData(exIdx, setIdx, field, input.value);
 }
-function updateSetData(exIdx, setIdx, field, val){ activeSession.exercises[exIdx].sets[setIdx][field] = val; }
+function updateSetData(exIdx, setIdx, field, val){ 
+  activeSession.exercises[exIdx].sets[setIdx][field] = val; 
+  persistSession();
+}
 
+// BUG FIX: Set Overwrite Bug Solved (Uses exact ID instead of generic span:last-child)
 function toggleSetCheck(exIdx, setIdx){
+  if(activeSession.isPaused) { showToast("Önce antrenmanı devam ettir!"); return; }
+  
   const set = activeSession.exercises[exIdx].sets[setIdx];
   const ex = activeSession.exercises[exIdx];
   
   if(set.checked){
     set.checked = false;
   } else {
-    // Kullanıcı içini silip boş bıraktıysa hata vermemesi için "0" yap
     if(ex.trackType === 'weight' && !set.kg) set.kg = '0';
     if(!set.reps) set.reps = '0';
     
     set.checked = true;
-    startRestTimer(90); 
+    startRestTimer(settings.defaultRest); 
     if(setIdx === ex.sets.length - 1 && exIdx < activeSession.exercises.length - 1) document.getElementById(`ex-card-${exIdx+1}`).classList.add('open');
   }
+  persistSession();
   refreshSetRow(exIdx, setIdx);
-  document.querySelector(`#ex-card-${exIdx} .ex-card-header span:last-child`).textContent = `${activeSession.exercises[exIdx].sets.filter(s=>s.checked).length}/${activeSession.exercises[exIdx].sets.length} Set`;
+  document.getElementById(`ex-set-count-${exIdx}`).textContent = `${activeSession.exercises[exIdx].sets.filter(s=>s.checked).length}/${activeSession.exercises[exIdx].sets.length} Set`;
 }
 
 function refreshSetRow(exIdx, setIdx){
@@ -627,17 +699,18 @@ function addSetToActive(exIdx){
   const ex = activeSession.exercises[exIdx];
   const lastSet = ex.sets[ex.sets.length-1];
   ex.sets.push({ type: '1', kg: lastSet?lastSet.kg:'', reps: lastSet?lastSet.reps:'', prevKg:'', prevReps:'', checked:false });
+  persistSession();
   renderActiveWorkout();
 }
 
 function getMaxValForExercise(exName, trackType){
-  let max = 0;
+  let max = null;
   logs.forEach(log => {
     log.exercises.forEach(ex => {
       if(ex.name === exName){
         ex.sets.forEach(s => {
           let val = parseFloat(trackType==='weight' ? s.kg : s.reps) || 0;
-          if(val > max) max = val;
+          if(max === null || val > max) max = val;
         });
       }
     });
@@ -645,23 +718,75 @@ function getMaxValForExercise(exName, trackType){
   return max;
 }
 
-// --- REST TIMER ---
-let restTimerInt = null; let restTimeRemaining = 0;
+// --- REST TIMER (BACKGROUND SLEEP FIX) ---
+let restTimerInterval = null; 
+let restTargetMs = 0;
+
 function startRestTimer(seconds){
-  restTimeRemaining = seconds; document.getElementById('rest-timer-bar').classList.add('show'); updateRestTimerUI();
-  if(restTimerInt) clearInterval(restTimerInt);
-  restTimerInt = setInterval(() => {
-    restTimeRemaining--;
-    if(restTimeRemaining <= 0){ stopRestTimer(); showToast("Sete gir! 🚀"); if(navigator.vibrate) navigator.vibrate([200, 100, 200]); } 
-    else { updateRestTimerUI(); }
+  restTargetMs = Date.now() + (seconds * 1000); 
+  document.getElementById('rest-timer-bar').classList.add('show'); 
+  updateRestTimerUI();
+  
+  if(restTimerInterval) clearInterval(restTimerInterval);
+  restTimerInterval = setInterval(() => {
+    const remainingMs = restTargetMs - Date.now();
+    if(remainingMs <= 0){ 
+      stopRestTimer(); 
+      showToast("Süre Doldu! Sete Gir! 🚀"); 
+      if(navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]); 
+    } else { 
+      updateRestTimerUI(); 
+    }
   }, 1000);
 }
-function adjustRestTimer(sec){ restTimeRemaining = Math.max(0, restTimeRemaining + sec); updateRestTimerUI(); }
-function stopRestTimer(){ clearInterval(restTimerInt); document.getElementById('rest-timer-bar').classList.remove('show'); }
+// Symmetric buttons: -15s and +15s
+function adjustRestTimer(sec){ 
+  restTargetMs += (sec * 1000); 
+  if(restTargetMs < Date.now()) restTargetMs = Date.now();
+  updateRestTimerUI(); 
+}
+function stopRestTimer(){ 
+  clearInterval(restTimerInterval); 
+  document.getElementById('rest-timer-bar').classList.remove('show'); 
+}
 function updateRestTimerUI(){
-  const m = String(Math.floor(restTimeRemaining / 60)).padStart(2, '0');
-  const s = String(restTimeRemaining % 60).padStart(2, '0');
+  const remainingSec = Math.max(0, Math.ceil((restTargetMs - Date.now()) / 1000));
+  const m = String(Math.floor(remainingSec / 60)).padStart(2, '0');
+  const s = String(remainingSec % 60).padStart(2, '0');
   document.getElementById('rt-display').textContent = `${m}:${s}`;
+}
+
+// --- SESSION NOTE LOGIC ---
+let currentNoteExIdx = null;
+function openNoteModal(exIdx){
+  currentNoteExIdx = exIdx;
+  const ex = activeSession.exercises[exIdx];
+  document.getElementById('note-modal-title').textContent = ex.name + " (Notlar)";
+  
+  // Find last week's note
+  let prevNote = null;
+  const prevLog = [...logs].reverse().find(l => l.exercises.some(e => e.id === ex.id && e.sessionNote));
+  if(prevLog) prevNote = prevLog.exercises.find(e => e.id === ex.id).sessionNote;
+  
+  const prevContainer = document.getElementById('prev-note-container');
+  if(prevNote){
+    prevContainer.style.display = 'block';
+    prevContainer.textContent = "💡 Geçen antrenman notun: " + prevNote;
+  } else {
+    prevContainer.style.display = 'none';
+  }
+  
+  document.getElementById('current-session-note').value = ex.sessionNote || '';
+  document.getElementById('note-modal').classList.add('open');
+}
+function closeNoteModal(){ document.getElementById('note-modal').classList.remove('open'); }
+function saveSessionNote(){
+  const val = document.getElementById('current-session-note').value.trim();
+  activeSession.exercises[currentNoteExIdx].sessionNote = val;
+  persistSession();
+  closeNoteModal();
+  renderActiveWorkout(); // Refresh header icon color
+  showToast("Not kaydedildi ✓");
 }
 
 // --- HISTORY TAB ---
@@ -688,7 +813,8 @@ function renderHistory(){
       <div class="history-body">
         ${log.exercises.map(ex => `
           <div class="hist-ex">
-            <div class="hist-ex-name">${ex.name}</div>
+            <div class="hist-ex-name">${ex.name} ${ex.sessionNote ? `<span style="color:var(--info); font-size:14px">💬</span>` : ''}</div>
+            ${ex.sessionNote ? `<div style="font-size:12px; font-style:italic; color:var(--muted); margin-bottom:4px">"${ex.sessionNote}"</div>` : ''}
             ${ex.sets.map((s, idx) => {
               let valStr = ex.trackType==='weight' ? `${s.kg}kg × ${s.reps}` : (ex.trackType==='time' ? `${s.reps} sn` : `${s.reps} tekrar`);
               return `<div class="hist-set">
@@ -713,7 +839,7 @@ function deleteLog(e, logId){
   }
 }
 
-// --- STATS TAB ---
+// --- STATS TAB (CHART AXIS BUG FIXED) ---
 let chartEx = null; let chartMusc = null;
 function renderStats(){
   document.getElementById('stat-sessions').textContent = logs.length;
@@ -722,18 +848,14 @@ function renderStats(){
 
   if(logs.length === 0) return;
 
-  // Populate Dropdown for Unique Exercises + Volume
   const select = document.getElementById('stat-ex-select');
   const uniqueNames =[...new Set(logs.flatMap(l => l.exercises.map(e => e.name)))].sort();
   const currentSelection = select.value || 'VOLUME';
   
-  select.innerHTML = `<option value="VOLUME">🔥 Toplam Hacim (kg)</option>` + 
-                     uniqueNames.map(n => `<option value="${n}">${n}</option>`).join('');
-                     
+  select.innerHTML = `<option value="VOLUME">🔥 Toplam Hacim (kg)</option>` + uniqueNames.map(n => `<option value="${n}">${n}</option>`).join('');
   select.value = currentSelection;
   updateExerciseChart();
 
-  // Muscle Doughnut Chart
   const mCtx = document.getElementById('muscle-chart').getContext('2d');
   const mCounts = {};
   logs.forEach(l => l.exercises.forEach(ex => {
@@ -756,16 +878,13 @@ function updateExerciseChart(){
   
   const dataPoints =[];
   let chartLabel = '';
-  let yStepSize = null;
 
   if(exName === 'VOLUME'){
-    // Toplam Hacim Grafiği
     chartLabel = 'Toplam Hacim (kg)';
     logs.slice(-15).forEach(l => {
       dataPoints.push({ date: new Date(l.date).toLocaleDateString('tr-TR',{day:'numeric',month:'short'}), val: l.volume||0 });
     });
   } else {
-    // Spesifik Hareket Grafiği
     let isTime = false;
     logs.forEach(l => {
       const ex = l.exercises.find(e => e.name === exName);
@@ -780,15 +899,12 @@ function updateExerciseChart(){
       }
     });
     chartLabel = isTime ? 'Maks Süre (sn)' : 'Maks Ağırlık / Tekrar';
-    yStepSize = 0.5; // Küsüratları engelle (1, 1.5, 2 vs)
   }
 
   const ctx = document.getElementById('ex-chart').getContext('2d');
   if(chartEx) chartEx.destroy();
   
-  const yScales = { beginAtZero: false, grid:{color:'rgba(0,0,0,0.05)'} };
-  if(yStepSize) yScales.ticks = { stepSize: yStepSize };
-
+  // FIXED AXIS: Precision:1 prevents 50.123 but allows 5.5
   chartEx = new Chart(ctx, {
     type: 'line',
     data: {
@@ -800,12 +916,12 @@ function updateExerciseChart(){
       }]
     },
     options: { responsive:true, maintainAspectRatio:false, plugins: { legend: { display: false } },
-      scales: { y: yScales, x: { grid:{display:false} } }
+      scales: { y: { beginAtZero: false, ticks: { precision: 1 }, grid:{color:'rgba(0,0,0,0.05)'} }, x: { grid:{display:false} } }
     }
   });
 }
 
-// --- PROGRAM TAB ---
+// --- PROGRAM TAB (INLINE EDIT FIX) ---
 function renderProgram(){
   const container = document.getElementById('program-content');
   container.innerHTML = program.map((day, dIdx) => `
@@ -837,82 +953,58 @@ function renderProgram(){
   `).join('');
 }
 
-function addNewDay(){
-  program.push({ id:'d'+Date.now(), name:'Yeni Gün', note:'', exercises:[] });
-  saveProgram(program); renderProgram();
-}
-function deleteDay(dIdx){
-  if(confirm("Tüm antrenman gününü silmek istiyor musun?")){
-    program.splice(dIdx, 1); saveProgram(program); renderProgram();
-  }
-}
+function addNewDay(){ program.push({ id:'d'+Date.now(), name:'Yeni Gün', note:'', exercises:[] }); saveProgram(program); renderProgram(); }
+function deleteDay(dIdx){ if(confirm("Tüm antrenman gününü silmek istiyor musun?")){ program.splice(dIdx, 1); saveProgram(program); renderProgram(); } }
+
 function editDayName(dIdx){
   const day = program[dIdx];
   const container = document.getElementById(`prog-day-${dIdx}`);
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; gap:6px; padding-right:10px;">
-      <input type="text" id="edit-day-name-${dIdx}" value="${day.name}" placeholder="Gün Adı" style="font-size:16px; font-weight:700; padding:6px; border:1px solid var(--accent); border-radius:6px; width:100%; font-family:inherit;">
-      <input type="text" id="edit-day-note-${dIdx}" value="${day.note || ''}" placeholder="Kısa Not (Örn: Göğüs + Triceps)" style="font-size:14px; padding:6px; border:1px solid var(--border); border-radius:6px; width:100%; font-family:inherit;">
-      <button onclick="saveDayName(${dIdx})" style="background:var(--success); color:white; border:none; border-radius:6px; padding:8px; font-weight:bold; cursor:pointer; font-family:inherit;">✓ Kaydet</button>
+      <input type="text" id="edit-day-name-${dIdx}" value="${day.name}" placeholder="Gün Adı" style="font-size:16px; font-weight:700; padding:6px; border:1px solid var(--accent); border-radius:6px; width:100%;">
+      <input type="text" id="edit-day-note-${dIdx}" value="${day.note || ''}" placeholder="Kısa Not" style="font-size:14px; padding:6px; border:1px solid var(--border); border-radius:6px; width:100%;">
+      <button onclick="saveDayName(${dIdx})" style="background:var(--success); color:white; border:none; border-radius:6px; padding:8px; font-weight:bold; cursor:pointer;">✓ Kaydet</button>
     </div>
   `;
 }
-
 function saveDayName(dIdx){
   const newName = document.getElementById(`edit-day-name-${dIdx}`).value;
   const newNote = document.getElementById(`edit-day-note-${dIdx}`).value;
   if(newName.trim()) program[dIdx].name = newName.trim();
   program[dIdx].note = newNote.trim();
-  saveProgram(program); 
-  renderProgram();
+  saveProgram(program); renderProgram();
 }
+
 function addExerciseToProgram(dIdx){
   program[dIdx].exercises.push({ id:'new-'+Date.now(), name:'Yeni Hareket', sets:'3', reps:'10', muscle:'Göğüs', trackType:'weight', note:'' });
-  saveProgram(program); renderProgram();
-  openEditExerciseModal(dIdx, program[dIdx].exercises.length - 1);
+  saveProgram(program); renderProgram(); openEditExerciseModal(dIdx, program[dIdx].exercises.length - 1);
 }
-function deleteExerciseFromProgram(dIdx, eIdx){
-  if(confirm("Hareketi silmek istediğine emin misin?")){
-    program[dIdx].exercises.splice(eIdx, 1); saveProgram(program); renderProgram();
-  }
-}
+function deleteExerciseFromProgram(dIdx, eIdx){ if(confirm("Hareketi silmek istediğine emin misin?")){ program[dIdx].exercises.splice(eIdx, 1); saveProgram(program); renderProgram(); } }
 
 // --- MODAL LOGIC ---
 function openEditExerciseModal(dIdx, eIdx){
   const ex = program[dIdx].exercises[eIdx];
-  document.getElementById('edit-dIdx').value = dIdx;
-  document.getElementById('edit-eIdx').value = eIdx;
-  document.getElementById('edit-name').value = ex.name;
-  document.getElementById('edit-sets').value = ex.sets;
-  document.getElementById('edit-reps').value = ex.reps;
-  document.getElementById('edit-type').value = ex.trackType || 'weight';
-  document.getElementById('edit-muscle').value = ex.muscle || 'Göğüs';
-  document.getElementById('edit-note').value = ex.note || '';
+  document.getElementById('edit-dIdx').value = dIdx; document.getElementById('edit-eIdx').value = eIdx;
+  document.getElementById('edit-name').value = ex.name; document.getElementById('edit-sets').value = ex.sets; document.getElementById('edit-reps').value = ex.reps;
+  document.getElementById('edit-type').value = ex.trackType || 'weight'; document.getElementById('edit-muscle').value = ex.muscle || 'Göğüs'; document.getElementById('edit-note').value = ex.note || '';
   document.getElementById('edit-modal').classList.add('open');
 }
 function closeModal(){ document.getElementById('edit-modal').classList.remove('open'); }
 function saveExerciseModal(){
-  const dIdx = document.getElementById('edit-dIdx').value;
-  const eIdx = document.getElementById('edit-eIdx').value;
+  const dIdx = document.getElementById('edit-dIdx').value; const eIdx = document.getElementById('edit-eIdx').value;
   program[dIdx].exercises[eIdx] = {
-    id: program[dIdx].exercises[eIdx].id,
-    name: document.getElementById('edit-name').value || 'İsimsiz Hareket',
-    sets: document.getElementById('edit-sets').value || '3',
-    reps: document.getElementById('edit-reps').value || '10',
-    trackType: document.getElementById('edit-type').value,
-    muscle: document.getElementById('edit-muscle').value,
-    note: document.getElementById('edit-note').value
+    id: program[dIdx].exercises[eIdx].id, name: document.getElementById('edit-name').value || 'İsimsiz Hareket',
+    sets: document.getElementById('edit-sets').value || '3', reps: document.getElementById('edit-reps').value || '10',
+    trackType: document.getElementById('edit-type').value, muscle: document.getElementById('edit-muscle').value, note: document.getElementById('edit-note').value
   };
   saveProgram(program); renderProgram(); closeModal(); showToast("Kaydedildi ✓");
 }
 
 // --- EXPORT / IMPORT / RESET ---
 function exportData(){
-  const data = { logs, program };
+  const data = { logs, program, settings };
   const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `Antrenman_Yedek_${todayStr()}.json`;
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Antrenman_Yedek_${todayStr()}.json`;
   a.click(); showToast("Yedek indirildi 💾");
 }
 function importData(event){
@@ -922,19 +1014,18 @@ function importData(event){
     try {
       const parsed = JSON.parse(e.target.result);
       if(parsed.logs && parsed.program){
-        logs = parsed.logs; program = parsed.program;
-        saveData(logs); saveProgram(program);
+        logs = parsed.logs; program = parsed.program; if(parsed.settings) settings = parsed.settings;
+        saveData(logs); saveProgram(program); localStorage.setItem('wt_settings', JSON.stringify(settings));
         alert("Veriler başarıyla yüklendi! Sayfa yenileniyor..."); location.reload();
       } else alert("Geçersiz dosya formatı!");
     } catch(err){ alert("Dosya okunamadı!"); }
-  };
-  reader.readAsText(file);
+  }; reader.readAsText(file);
 }
 function resetAllData(){
-  if(confirm("DİKKAT! Tüm geçmiş antrenmanların ve kendi programın kalıcı olarak SİLİNECEK.\nBunu onaylıyor musun?")){
-    if(confirm("Gerçekten emin misin? Bu işlem geri alınamaz!")){
-      localStorage.removeItem('wt_logs'); localStorage.removeItem('wt_prog');
-      alert("Her şey sıfırlandı. Uygulama baştan başlıyor."); location.reload();
+  if(confirm("DİKKAT! Tüm geçmişin ve kendi programın kalıcı olarak SİLİNECEK.\nOnaylıyor musun?")){
+    if(confirm("Gerçekten emin misin? Geri alınamaz!")){
+      localStorage.removeItem('wt_logs'); localStorage.removeItem('wt_prog'); localStorage.removeItem('wt_active_session');
+      alert("Her şey sıfırlandı."); location.reload();
     }
   }
 }
