@@ -389,19 +389,34 @@ function saveProgram(p) {
     }
 }
 
-// 🛡️ V4.0 KUSURSUZ MIGRATION SCRIPT (0 Risk)
+// 🛡️ GELİŞMİŞ MIGRATION SCRIPT (Eski Türkçe ve İngilizce isimleri tanır)
 function runV4Migration() {
-  if (localStorage.getItem('wt_v4_migrated')) return; // Zaten yapıldıysa atla.
+  if (localStorage.getItem('wt_v4_migrated_2')) return; // Yeni damga ile tekrar çalışmasını sağlar
   try {
     let p = JSON.parse(localStorage.getItem('wt_prog'));
     let l = JSON.parse(localStorage.getItem('wt_logs'));
     
+    // Eski olası tüm isimleri kapsayan harita (Hem TR hem EN)
     const map = {
+      'Salı': { name: 'Göğüs + Triceps', note: 'Push', targetDay: 2 },
       'Tuesday': { name: 'Göğüs + Triceps', note: 'Push', targetDay: 2 },
+      'Göğüs + Triceps': { name: 'Göğüs + Triceps', note: 'Push', targetDay: 2 }, // Hedef günü bozuk kaldıysa düzeltir
+      
+      'Perşembe': { name: 'Sırt + Biceps', note: 'Pull', targetDay: 4 },
       'Thursday': { name: 'Sırt + Biceps', note: 'Pull', targetDay: 4 },
+      'Sırt + Biceps': { name: 'Sırt + Biceps', note: 'Pull', targetDay: 4 },
+      
+      'Cumartesi': { name: 'Omuz + Core', note: 'Serbest Ağırlık & Mat', targetDay: 6 },
       'Saturday': { name: 'Omuz + Core', note: 'Serbest Ağırlık & Mat', targetDay: 6 },
+      'Omuz + Core': { name: 'Omuz + Core', note: 'Serbest Ağırlık & Mat', targetDay: 6 },
+      
+      'Pazar': { name: 'Bacak', note: 'Diz Dostu', targetDay: 0 },
       'Sunday': { name: 'Bacak', note: 'Diz Dostu', targetDay: 0 },
-      'Optional day': { name: 'Opsiyonel HIIT', note: 'Yağ Yakımı & Kondisyon', targetDay: -1 }
+      'Bacak': { name: 'Bacak', note: 'Diz Dostu', targetDay: 0 },
+      
+      'Opsiyonel': { name: 'Opsiyonel HIIT', note: 'Yağ Yakımı & Kondisyon', targetDay: -1 },
+      'Optional day': { name: 'Opsiyonel HIIT', note: 'Yağ Yakımı & Kondisyon', targetDay: -1 },
+      'Opsiyonel HIIT': { name: 'Opsiyonel HIIT', note: 'Yağ Yakımı & Kondisyon', targetDay: -1 }
     };
 
     if (p) {
@@ -420,9 +435,9 @@ function runV4Migration() {
       localStorage.setItem('wt_logs', JSON.stringify(l));
     }
     
-    localStorage.setItem('wt_v4_migrated', 'true');
-    console.log("V4 Migration Başarılı!");
-  } catch (e) { console.error("Migration başarısız, eski veri korundu.", e); }
+    localStorage.setItem('wt_v4_migrated_2', 'true');
+    console.log("Migration 2 Başarılı!");
+  } catch (e) { console.error("Migration başarısız", e); }
 }
 
 runV4Migration(); // İlk açılışta verileri dönüştürür
@@ -1037,19 +1052,25 @@ function updateExerciseChart(){
   });
 }
 
-// --- PROGRAM TAB ---
+// --- PROGRAM TAB (YENİ KAPSÜL UI TASARIMI) ---
 function renderProgram(){
   const container = document.getElementById('program-content');
   container.innerHTML = program.map((day, dIdx) => {
     const days =['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
-    const targetStr = day.targetDay === -1 ? 'Belirsiz/Opsiyonel' : days[day.targetDay];
+    const targetStr = day.targetDay === -1 || day.targetDay === undefined ? 'Belirsiz/Opsiyonel' : days[day.targetDay];
     
     return `
     <div class="card" style="padding:0; overflow:hidden">
       <div class="ex-card-header" style="background:var(--accent-light)">
         <div style="flex:1" id="prog-day-${dIdx}">
           <div style="font-weight:800;color:var(--accent);font-size:16px">${day.name}</div>
-          <div style="font-size:12px;color:var(--accent-mid);margin-top:2px">Not: ${day.note||'Yok'} • Hedef: ${targetStr}</div>
+          
+          <!-- YENİ UI KAPSÜLLERİ (BADGES) BURADA -->
+          <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+            <span class="badge" style="background:var(--info-light);color:var(--info);font-size:11px;padding:4px 8px;margin:0;">📅 ${targetStr}</span>
+            ${day.note ? `<span class="badge" style="background:var(--warn-light);color:var(--warn);font-size:11px;padding:4px 8px;margin:0;">💡 ${day.note}</span>` : ''}
+          </div>
+
         </div>
         <button class="btn-icon" onclick="editDayName(${dIdx})">✏️</button>
       </div>
