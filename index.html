@@ -2,6 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
+<!-- touch-action manipulation zoom'u engeller -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -35,7 +36,7 @@
   }
 }
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:100px;font-size:15px;line-height:1.5;overflow-x:hidden;}
-input, button, select, textarea {font-family:inherit; font-size:16px !important;} /* iOS Zoom Fix */
+input, button, select, textarea {font-family:inherit; font-size:16px !important; touch-action:manipulation;} /* iOS Zoom Fix & Touch Action */
 
 /* Navbar & Topbar */
 .topbar{position:sticky;top:0;z-index:100;background:rgba(var(--bg), 0.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
@@ -52,16 +53,16 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 
 /* Common UI */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
-.btn{border:none;border-radius:var(--radius-sm);padding:14px 16px;font-weight:600;cursor:pointer;text-align:center;width:100%;font-size:16px;transition:transform 0.1s}
-.btn:active{transform:scale(0.97)}
+.btn{border:none;border-radius:var(--radius-sm);padding:14px 16px;font-weight:600;cursor:pointer;text-align:center;width:100%;font-size:16px;transition:transform 0.1s, opacity 0.1s; touch-action:manipulation; user-select:none;}
+.btn:active{transform:scale(0.95); opacity:0.8} /* Haptic UI Feel */
 .btn-primary{background:var(--accent);color:#fff}
 .btn-success{background:var(--success);color:#fff}
 .btn-danger-outline{background:transparent;border:1px solid var(--danger);color:var(--danger)}
-.btn-icon{background:none;border:none;color:var(--muted);cursor:pointer;padding:8px;border-radius:8px;}
+.btn-icon{background:none;border:none;color:var(--muted);cursor:pointer;padding:8px;border-radius:8px;transition:transform 0.1s}
+.btn-icon:active{transform:scale(0.85)}
 .btn-icon:hover{color:var(--text);background:var(--surface2)}
-.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:var(--info-light);color:var(--info);margin-top:4px}
 
-/* Weekly Calendar UI (V4.2 Gezinilebilir & Bugün Vurgulu) */
+/* Calendar UI */
 .cal-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;scroll-snap-type:x mandatory}
 .cal-scroll::-webkit-scrollbar{display:none}
 .cal-card{min-width:75px;flex:1;flex-shrink:0;scroll-snap-align:start;padding:12px 8px;border-radius:14px;border:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all 0.2s}
@@ -72,23 +73,24 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 .cal-date.today-date{background:var(--accent); color:#fff; box-shadow:0 2px 6px rgba(94,92,230,0.4)}
 .cal-status{font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px; min-height:18px;}
 .cal-detail-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:24px;}
-  
-/* Wrap Day Tabs */
+
 .day-tabs{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:8px;margin-bottom:12px;}
 .day-pill{padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);transition:all 0.2s;flex-grow:1;text-align:center;}
 .day-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;margin-top:4px}
 
 /* Active Workout Tracker */
 .workout-header{background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);padding:16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 0 0 2px var(--accent-light)}
 .timer-text{font-family:'DM Mono',monospace;font-size:24px;font-weight:700;color:var(--accent); transition: color 0.3s;}
 .timer-text.paused{color:var(--warn);}
 
-.ex-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;transition:all 0.3s}
-.ex-card-header{padding:16px;display:flex;justify-content:space-between;align-items:center;background:var(--surface);cursor:pointer;font-weight:600;font-size:15px}
-.ex-card-body{display:none;padding:0 12px 12px;border-top:1px solid var(--border)}
-.ex-card.open .ex-card-body{display:block}
+/* Accordions (Exercises & Programs) */
+.ex-card, .prog-card {background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;transition:all 0.3s}
+.ex-card-header, .prog-header {padding:16px;display:flex;justify-content:space-between;align-items:center;background:var(--surface);cursor:pointer;font-weight:600;font-size:15px; user-select:none;}
+.ex-card-body, .prog-body {display:none;padding:0 12px 12px;border-top:1px solid var(--border)}
+.ex-card.open .ex-card-body, .prog-card.open .prog-body {display:block}
 
-/* Active Set Row */
+/* Set Row & Buttons */
 .set-header-grid{display:grid;grid-template-columns:40px 1fr 1fr 45px;gap:8px;padding:8px 0;font-size:11px;color:var(--muted);text-align:center;font-weight:600;text-transform:uppercase}
 .set-row{display:grid;grid-template-columns:40px 1fr 1fr 45px;gap:8px;align-items:center;margin-bottom:8px;padding:6px;border-radius:var(--radius-sm);transition:all 0.2s ease}
 
@@ -97,7 +99,8 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 .set-row.completed .btn-step{color:var(--success); opacity:0.6;}
 .set-row.completed .input-group{background:transparent;}
 
-.set-type-btn{width:100%;height:38px;border-radius:var(--radius-sm);border:none;background:var(--surface2);font-family:'DM Mono',monospace;font-weight:700;font-size:14px;color:var(--text);cursor:pointer}
+.set-type-btn{width:100%;height:38px;border-radius:var(--radius-sm);border:none;background:var(--surface2);font-family:'DM Mono',monospace;font-weight:700;font-size:14px;color:var(--text);cursor:pointer;transition:transform 0.1s}
+.set-type-btn:active{transform:scale(0.90)}
 .set-type-btn.type-w{background:var(--warn-light);color:var(--warn)}
 .set-type-btn.type-d{background:var(--info-light);color:var(--info)}
 .set-type-btn.type-f{background:var(--danger-light);color:var(--danger)}
@@ -105,11 +108,13 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 .input-group{display:flex;align-items:center;background:var(--surface2);border-radius:var(--radius-sm);height:38px;overflow:hidden;border:1px solid transparent;transition:border-color 0.2s}
 .input-group.hidden{visibility:hidden; opacity:0;}
 .input-group:focus-within{border-color:var(--accent); background:var(--surface);}
-.btn-step{width:32px;height:100%;background:none;border:none;color:var(--muted);font-weight:600;cursor:pointer;font-size:18px}
+.btn-step{width:34px;height:100%;background:none;border:none;color:var(--muted);font-weight:600;cursor:pointer;font-size:18px; touch-action:manipulation; user-select:none; transition:transform 0.1s}
+.btn-step:active{transform:scale(0.8); color:var(--text)}
 .set-input{flex:1;width:100%;height:100%;background:transparent;border:none;text-align:center;font-family:'DM Mono',monospace;font-weight:600;color:var(--text);padding:0}
 .set-input:focus{outline:none}
 
-.btn-check{width:100%;height:38px;border-radius:var(--radius-sm);border:none;background:var(--surface2);color:var(--muted);font-size:16px;cursor:pointer;transition:all 0.2s}
+.btn-check{width:100%;height:38px;border-radius:var(--radius-sm);border:none;background:var(--surface2);color:var(--muted);font-size:16px;cursor:pointer;transition:all 0.2s; touch-action:manipulation;}
+.btn-check:active{transform:scale(0.85)}
 .btn-check.checked{background:var(--success);color:#fff}
 
 .pr-badge{position:absolute;top:-8px;right:-5px;font-size:12px;background:#fff;border-radius:50%;padding:2px;box-shadow:0 2px 4px rgba(0,0,0,0.2);animation:pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)}
@@ -119,11 +124,12 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 .rest-timer-bar{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);width:90%;max-width:400px;background:var(--surface);border:2px solid var(--accent);border-radius:30px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-float);z-index:200;opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
 .rest-timer-bar.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:all}
 .rt-time{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--accent)}
-.btn-rt{background:var(--surface2);border:none;padding:8px 14px;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;color:var(--text)}
+.btn-rt{background:var(--surface2);border:none;padding:8px 14px;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;color:var(--text); transition:transform 0.1s}
+.btn-rt:active{transform:scale(0.9)}
 
 /* History Accordion */
 .history-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
-.history-header{padding:16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.history-header{padding:16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer; user-select:none;}
 .history-title{font-size:16px;font-weight:700}
 .history-meta{font-size:12px;color:var(--muted);display:flex;gap:12px;margin-top:6px;font-family:'DM Mono',monospace}
 .history-body{display:none;padding:12px 16px;border-top:1px solid var(--surface2);background:var(--surface2)}
@@ -193,7 +199,8 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
       </div>
     </div>
     <div id="active-exercises"></div>
-    <button class="btn btn-success" style="margin-top:20px" onclick="finishWorkout()">✅ Antrenmanı Kaydet & Bitir</button>
+    <button class="btn btn-danger-outline" style="border-style:dashed; margin-bottom:20px; color:var(--muted); border-color:var(--muted)" onclick="openAdHocModal()">+ Anlık Hareket Ekle</button>
+    <button class="btn btn-success" style="margin-bottom:20px" onclick="finishWorkout()">✅ Antrenmanı Kaydet & Bitir</button>
   </div>
 </div>
 
@@ -274,7 +281,7 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
   </div>
 </div>
 
-<!-- SESSION NOTE TOOLTIP MODAL -->
+<!-- SESSION NOTE TOOLTIP MODAL (YENİ GÖRÜNÜM) -->
 <div class="modal-overlay" id="note-modal" onclick="if(event.target===this)closeNoteModal()">
   <div class="modal-sheet">
     <h3 style="margin-bottom:12px; font-size:16px" id="note-modal-title">Hareket Notu</h3>
@@ -283,6 +290,23 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
     <div class="flex gap-2" style="margin-top:16px">
       <button class="btn" style="background:var(--surface2);color:var(--text)" onclick="closeNoteModal()">Kapat</button>
       <button class="btn btn-primary" onclick="saveSessionNote()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- AD-HOC (ANLIK) EXERCISE MODAL -->
+<div class="modal-overlay" id="adhoc-modal" onclick="if(event.target===this)closeAdHocModal()">
+  <div class="modal-sheet">
+    <h3 style="margin-bottom:16px">Anlık Hareket Ekle</h3>
+    <div class="form-group"><label class="form-label">Hareket Adı</label><input type="text" class="form-input" id="adhoc-name" placeholder="Örn: Bicep Curl"></div>
+    <div class="flex gap-2" style="margin-bottom:16px">
+      <div style="flex:1"><label class="form-label">Set</label><input type="number" class="form-input" id="adhoc-sets" value="3"></div>
+      <div style="flex:1"><label class="form-label">Tekrar/Süre</label><input type="text" class="form-input" id="adhoc-reps" value="10"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Takip Tipi</label><select class="form-select" id="adhoc-type"><option value="weight">Ağırlık (KG)</option><option value="bw">Vücut Ağırlığı</option><option value="time">Süreli (sn)</option></select></div>
+    <div class="flex gap-2" style="margin-top:24px">
+      <button class="btn" style="background:var(--surface2);color:var(--text)" onclick="closeAdHocModal()">İptal</button>
+      <button class="btn btn-primary" onclick="saveAdHocExercise()">Ekle</button>
     </div>
   </div>
 </div>
@@ -312,7 +336,7 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 <div class="toast" id="toast"></div>
 
 <script>
-// --- V4.0 DEFAULT PROGRAM (NEW NAMING & TARGET DAYS) ---
+// --- V5.0 DEFAULT PROGRAM (NEW NAMING & TARGET DAYS) ---
 const DEFAULT_PROGRAM =[
   {id:'d1', name:'Göğüs + Triceps', note:'Push', targetDay: 2, exercises:[
     {id:'e1', name:'Flat barbell bench press', sets:'4', reps:'8-10', muscle:'Göğüs', trackType:'weight'},
@@ -359,66 +383,48 @@ const DEFAULT_PROGRAM =[
   ]}
 ];
 
-// --- CORE DATA & MIGRATION SYSTEM ---
+// --- HAPTIC FEEDBACK ---
+function haptic() {
+  if (navigator.vibrate) navigator.vibrate(40);
+}
+
+// --- CORE DATA & MIGRATION SYSTEM (ZIRHLI) ---
 function loadData() {
-    try {
-        return JSON.parse(localStorage.getItem('wt_logs') || '[]');
-    } catch (e) {
-        alert('HATA: Geçmiş veriniz bozuk! Yedek yükleyin veya sıfırlayın.');
-        return [];
-    }
+  try { return JSON.parse(localStorage.getItem('wt_logs') || '[]'); } 
+  catch(e) { alert("⚠️ Geçmiş verisi bozulmuş! Çökmeyi önlemek için liste boş açıldı. Lütfen Ayarlar'dan yedek yükleyin veya verileri sıfırlayın."); return[]; }
 }
-
 function saveData(logs) {
-    try {
-        localStorage.setItem('wt_logs', JSON.stringify(logs));
-    } catch (e) {
-        alert('HATA: Veri kaydedilemedi, cihaz hafızası dolu olabilir!');
-    }
+  try { localStorage.setItem('wt_logs', JSON.stringify(logs)); } 
+  catch(e) { alert("⚠️ HATA: Veri kaydedilemedi, cihaz hafızası dolu olabilir!"); }
 }
-
 function loadProgram() {
-    try {
-        return JSON.parse(localStorage.getItem('wt_prog') || JSON.stringify(DEFAULT_PROGRAM));
-    } catch (e) {
-        alert('HATA: Program veriniz bozuk! Varsayılan program açılıyor.');
-        return JSON.parse(JSON.stringify(DEFAULT_PROGRAM));
-    }
+  try { return JSON.parse(localStorage.getItem('wt_prog') || JSON.stringify(DEFAULT_PROGRAM)); } 
+  catch(e) { alert("⚠️ Program verisi bozuk! Varsayılan program yükleniyor."); return JSON.parse(JSON.stringify(DEFAULT_PROGRAM)); }
 }
-
 function saveProgram(p) {
-    try {
-        localStorage.setItem('wt_prog', JSON.stringify(p));
-    } catch (e) {
-        alert('HATA: Program kaydedilemedi!');
-    }
+  try { localStorage.setItem('wt_prog', JSON.stringify(p)); } 
+  catch(e) { alert("⚠️ Program kaydedilemedi!"); }
 }
 
-// 🛡️ GELİŞMİŞ MIGRATION SCRIPT (Eski Türkçe ve İngilizce isimleri tanır)
 function runV4Migration() {
-  if (localStorage.getItem('wt_v4_migrated_2')) return; // Yeni damga ile tekrar çalışmasını sağlar
+  if (localStorage.getItem('wt_v4_migrated_3')) return;
   try {
-    let p = JSON.parse(localStorage.getItem('wt_prog'));
-    let l = JSON.parse(localStorage.getItem('wt_logs'));
+    let p = loadProgram();
+    let l = loadData();
     
-    // Eski olası tüm isimleri kapsayan harita (Hem TR hem EN)
     const map = {
       'Salı': { name: 'Göğüs + Triceps', note: 'Push', targetDay: 2 },
       'Tuesday': { name: 'Göğüs + Triceps', note: 'Push', targetDay: 2 },
-      'Göğüs + Triceps': { name: 'Göğüs + Triceps', note: 'Push', targetDay: 2 }, // Hedef günü bozuk kaldıysa düzeltir
-      
+      'Göğüs + Triceps': { name: 'Göğüs + Triceps', note: 'Push', targetDay: 2 },
       'Perşembe': { name: 'Sırt + Biceps', note: 'Pull', targetDay: 4 },
       'Thursday': { name: 'Sırt + Biceps', note: 'Pull', targetDay: 4 },
       'Sırt + Biceps': { name: 'Sırt + Biceps', note: 'Pull', targetDay: 4 },
-      
       'Cumartesi': { name: 'Omuz + Core', note: 'Serbest Ağırlık & Mat', targetDay: 6 },
       'Saturday': { name: 'Omuz + Core', note: 'Serbest Ağırlık & Mat', targetDay: 6 },
       'Omuz + Core': { name: 'Omuz + Core', note: 'Serbest Ağırlık & Mat', targetDay: 6 },
-      
       'Pazar': { name: 'Bacak', note: 'Diz Dostu', targetDay: 0 },
       'Sunday': { name: 'Bacak', note: 'Diz Dostu', targetDay: 0 },
       'Bacak': { name: 'Bacak', note: 'Diz Dostu', targetDay: 0 },
-      
       'Opsiyonel': { name: 'Opsiyonel HIIT', note: 'Yağ Yakımı & Kondisyon', targetDay: -1 },
       'Optional day': { name: 'Opsiyonel HIIT', note: 'Yağ Yakımı & Kondisyon', targetDay: -1 },
       'Opsiyonel HIIT': { name: 'Opsiyonel HIIT', note: 'Yağ Yakımı & Kondisyon', targetDay: -1 }
@@ -427,29 +433,28 @@ function runV4Migration() {
     if (p) {
       p.forEach(day => {
         if (map[day.name]) {
-          day.name = map[day.name].name;
-          day.note = map[day.name].note;
-          day.targetDay = map[day.name].targetDay;
+          day.name = map[day.name].name; day.note = map[day.name].note; day.targetDay = map[day.name].targetDay;
         }
       });
-      localStorage.setItem('wt_prog', JSON.stringify(p));
+      saveProgram(p);
     }
-    
     if (l) {
       l.forEach(log => { if (map[log.dayName]) log.dayName = map[log.dayName].name; });
-      localStorage.setItem('wt_logs', JSON.stringify(l));
+      saveData(l);
     }
-    
-    localStorage.setItem('wt_v4_migrated_2', 'true');
-    console.log("Migration 2 Başarılı!");
+    localStorage.setItem('wt_v4_migrated_3', 'true');
   } catch (e) { console.error("Migration başarısız", e); }
 }
 
-runV4Migration(); // İlk açılışta verileri dönüştürür
+runV4Migration();
 let logs = loadData();
 let program = loadProgram();
 let currentDayId = program[0]?.id;
 let selectedCalendarDate = new Date();
+
+// Accordion States (Memory)
+let openExIndices = [];
+let openProgIndices =[];
 
 // Settings
 let settings = JSON.parse(localStorage.getItem('wt_settings')) || { defaultRest: 90 };
@@ -461,8 +466,7 @@ function saveSettings(){
 }
 
 const todayStr = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 };
 const showToast = (msg) => {
   const t = document.getElementById('toast');
@@ -473,6 +477,7 @@ const showToast = (msg) => {
 // Nav Routing
 document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
+    haptic();
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -491,11 +496,11 @@ const trDateOpts = {weekday:'long', day:'numeric', month:'long'};
 document.getElementById('topbar-sub').textContent = new Date().toLocaleDateString('tr-TR', trDateOpts);
 
 // --- CALENDAR LOGIC (V4.2 Gezinilebilir) ---
-let weekOffset = 0; // 0: Bu hafta, -1: Geçen hafta, 1: Gelecek hafta
+let weekOffset = 0;
 
 function getWeekDates(offset = 0) {
   const now = new Date();
-  now.setDate(now.getDate() + (offset * 7)); // Haftayı kaydır
+  now.setDate(now.getDate() + (offset * 7)); 
   const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
   const monday = new Date(now);
   monday.setDate(now.getDate() - dayOfWeek + 1);
@@ -506,16 +511,8 @@ function getWeekDates(offset = 0) {
   return week;
 }
 
-function changeWeek(dir) {
-  weekOffset += dir;
-  renderCalendar();
-}
-
-function resetWeek() {
-  weekOffset = 0;
-  selectedCalendarDate = new Date(); // Bugüne dön
-  renderCalendar();
-}
+function changeWeek(dir) { haptic(); weekOffset += dir; renderCalendar(); }
+function resetWeek() { haptic(); weekOffset = 0; selectedCalendarDate = new Date(); renderCalendar(); }
 
 function renderCalendar() {
   const strip = document.getElementById('cal-strip');
@@ -523,7 +520,6 @@ function renderCalendar() {
   const today = new Date(); today.setHours(0,0,0,0);
   selectedCalendarDate.setHours(0,0,0,0);
   
-  // Başlığı Güncelle (Bu Hafta, Geçen Hafta vs.)
   const titleEl = document.getElementById('cal-week-title');
   if (weekOffset === 0) titleEl.textContent = "BU HAFTA";
   else if (weekOffset === -1) titleEl.textContent = "GEÇEN HAFTA";
@@ -543,7 +539,6 @@ function renderCalendar() {
     const isDone = doneLogs.length > 0;
     const plan = program.find(p => p.targetDay === date.getDay());
     
-    // Geçmişte yapmadıysan plan (mavi nokta) silinir, temiz kalır!
     const isFutureOrToday = date >= today;
     const isPlanned = plan && isFutureOrToday && !isDone;
     
@@ -555,7 +550,7 @@ function renderCalendar() {
     const isToday = date.getTime() === today.getTime();
     
     return `
-      <div class="cal-card ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}" onclick="selectCalDate('${dateS}')">
+      <div class="cal-card ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}" onclick="haptic(); selectCalDate('${dateS}')">
         <div class="cal-day">${dayNames[date.getDay()]}</div>
         <div class="cal-date ${isToday ? 'today-date' : ''}">${date.getDate()}</div>
         <div class="cal-status">${statusHtml}</div>
@@ -565,15 +560,14 @@ function renderCalendar() {
   
   updateCalendarDetail();
   
-  // Seçili günü ekrana sığacak şekilde en mantıklı konuma kaydır
+  // Auto-center the selected day
   setTimeout(() => {
     const activeCard = strip.querySelector('.cal-card.selected');
     if (activeCard) {
-      // center yerine nearest kullanıyoruz!
       activeCard.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
     }
   }, 50);
-} // renderCalendar bitişi
+}
 
 function selectCalDate(dateStr) {
   selectedCalendarDate = new Date(dateStr); selectedCalendarDate.setHours(0,0,0,0); renderCalendar();
@@ -621,7 +615,7 @@ function renderPreWorkout(){
     const pill = document.createElement('div');
     pill.className = `day-pill ${day.id === currentDayId ? 'active' : ''}`;
     pill.textContent = day.name;
-    pill.onclick = () => { currentDayId = day.id; renderPreWorkout(); };
+    pill.onclick = () => { haptic(); currentDayId = day.id; renderPreWorkout(); };
     tabs.appendChild(pill);
   });
   
@@ -662,6 +656,10 @@ if(savedSession){
   } else {
     startWorkoutClock();
   }
+  
+  // Set first incomplete exercise as open
+  let firstIncomplete = activeSession.exercises.findIndex(ex => !ex.sets.every(s => s.checked));
+  openExIndices =[firstIncomplete === -1 ? 0 : firstIncomplete];
   renderActiveWorkout();
 }
 
@@ -671,6 +669,7 @@ function persistSession(){
 }
 
 function startWorkout(){
+  haptic();
   isWorkoutActive = true;
   const day = program.find(d => d.id === currentDayId);
   
@@ -696,9 +695,8 @@ function startWorkout(){
       return { id: ex.id, name: ex.name, muscle: ex.muscle, trackType: ex.trackType||'weight', defaultReps: ex.reps, sessionNote: '', sets: currentSets };
     })
   };
-  persistSession();
-  startWorkoutClock();
-  renderActiveWorkout();
+  openExIndices = [0]; // Open first exercise by default
+  persistSession(); startWorkoutClock(); renderActiveWorkout();
 }
 
 function startWorkoutClock(){
@@ -714,6 +712,7 @@ function startWorkoutClock(){
 }
 
 function togglePauseWorkout(){
+  haptic();
   if(activeSession.isPaused){
     activeSession.isPaused = false;
     activeSession.totalPausedMs += (Date.now() - activeSession.pauseStartMs);
@@ -733,17 +732,16 @@ function togglePauseWorkout(){
 }
 
 function cancelWorkout(){
-  if(confirm("Antrenmanı iptal etmek istiyor musun? Onaylarsan ana sayfaya döner.")){
+  haptic();
+  if(confirm("Antrenmanı iptal etmek istiyor musun?")){
     isWorkoutActive = false;
-    clearInterval(workoutTimerInterval);
-    stopRestTimer();
-    persistSession();
-    renderCalendar();
-    renderPreWorkout();
+    clearInterval(workoutTimerInterval); stopRestTimer(); persistSession();
+    renderCalendar(); renderPreWorkout();
   }
 }
 
 function finishWorkout(){
+  haptic();
   const hasDoneSets = activeSession.exercises.some(ex => ex.sets.some(s => s.checked));
   if(!hasDoneSets){ showToast("Hiçbir set kaydetmedin!"); return; }
   
@@ -770,19 +768,21 @@ function finishWorkout(){
     if(pastMax !== null && maxValInSession > pastMax) prCount++;
   });
   
-  activeSession.volume = totalVolume;
-  activeSession.prCount = prCount;
+  activeSession.volume = totalVolume; activeSession.prCount = prCount;
 
   logs.push(activeSession); saveData(logs);
   isWorkoutActive = false; persistSession();
   clearInterval(workoutTimerInterval); stopRestTimer();
   
   showToast(`Tebrikler! ${totalVolume>0 ? totalVolume+' kg hacim.' : 'Antrenman bitti!'} ${prCount>0 ? '🏆 '+prCount+' PR!' : ''}`);
-  
-  // Refresh calendar view after logging
-  selectedCalendarDate = new Date(); 
-  renderCalendar(); 
-  document.querySelector('.nav-item[data-page="history"]').click();
+  selectedCalendarDate = new Date(); renderCalendar(); document.querySelector('.nav-item[data-page="history"]').click();
+}
+
+function toggleExAccordion(exIdx) {
+  haptic();
+  if(openExIndices.includes(exIdx)) openExIndices = openExIndices.filter(i => i !== exIdx);
+  else openExIndices.push(exIdx);
+  renderActiveWorkout();
 }
 
 function renderActiveWorkout(){
@@ -798,17 +798,25 @@ function renderActiveWorkout(){
        prBadgeHtml = `<div style="font-size:12px; color:#D4AF37; margin-top:2px; font-weight:700;">🏆 Maks: ${prText}</div>`;
     }
     
-    const noteIconColor = ex.sessionNote ? 'var(--info)' : 'var(--muted)';
+    // NOT ICON & TEXT PREVIEW
+    const noteIcon = ex.sessionNote ? '📝' : '💬';
+    const noteIconColor = ex.sessionNote ? 'var(--accent)' : 'var(--muted)';
+    const notePreviewHtml = ex.sessionNote ? `<div style="font-size:11px; color:var(--muted); font-style:italic; font-weight:500; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:85%;">💬 "${ex.sessionNote}"</div>` : '';
+
+    const isOpen = openExIndices.includes(exIdx) ? 'open' : '';
 
     return `
-    <div class="ex-card ${exIdx===0 ? 'open' : ''}" id="ex-card-${exIdx}">
-      <div class="ex-card-header" onclick="this.parentElement.classList.toggle('open')">
-        <div>
+    <div class="ex-card ${isOpen}" id="ex-card-${exIdx}">
+      <div class="ex-card-header" onclick="toggleExAccordion(${exIdx})">
+        <div style="flex:1; min-width:0;">
           <span style="font-size:15px; font-weight:700;">${ex.name}</span>
-          <button class="btn-icon" style="padding:4px; margin-left:6px; color:${noteIconColor}" onclick="event.stopPropagation(); openNoteModal(${exIdx})">💬</button>
           ${prBadgeHtml}
+          ${notePreviewHtml}
         </div>
-        <span style="font-size:12px;color:var(--accent)" id="ex-set-count-${exIdx}">${ex.sets.filter(s=>s.checked).length}/${ex.sets.length} Set</span>
+        <div class="flex items-center gap-2">
+          <button class="btn-icon" style="padding:4px; font-size:18px; color:${noteIconColor}" onclick="event.stopPropagation(); haptic(); openNoteModal(${exIdx})">${noteIcon}</button>
+          <span style="font-size:12px;color:var(--accent)" id="ex-set-count-${exIdx}">${ex.sets.filter(s=>s.checked).length}/${ex.sets.length} Set</span>
+        </div>
       </div>
       <div class="ex-card-body">
         <div class="set-header-grid">
@@ -868,6 +876,7 @@ function renderSetRow(exIdx, setIdx, set){
 }
 
 function cycleSetType(exIdx, setIdx){
+  haptic();
   if(activeSession.exercises[exIdx].sets[setIdx].checked) return;
   const types =['1', 'W', 'D', 'F'];
   const cur = activeSession.exercises[exIdx].sets[setIdx].type;
@@ -876,6 +885,7 @@ function cycleSetType(exIdx, setIdx){
 }
 
 function adjustInput(exIdx, setIdx, field, amount){
+  haptic();
   if(activeSession.exercises[exIdx].sets[setIdx].checked) return;
   const input = document.getElementById(`${field==='kg'?'kg':'rep'}-${exIdx}-${setIdx}`);
   let val = parseFloat(input.value) || parseFloat(input.placeholder) || 0;
@@ -888,18 +898,27 @@ function updateSetData(exIdx, setIdx, field, val){
 }
 
 function toggleSetCheck(exIdx, setIdx){
+  haptic();
   if(activeSession.isPaused) { showToast("Önce antrenmanı devam ettir!"); return; }
   const set = activeSession.exercises[exIdx].sets[setIdx];
   const ex = activeSession.exercises[exIdx];
   
-  if(set.checked) set.checked = false;
-  else {
+  if(set.checked) {
+    set.checked = false;
+  } else {
     if(ex.trackType === 'weight' && !set.kg) set.kg = '0';
     if(!set.reps) set.reps = '0';
-    
     set.checked = true;
     startRestTimer(settings.defaultRest); 
-    if(setIdx === ex.sets.length - 1 && exIdx < activeSession.exercises.length - 1) document.getElementById(`ex-card-${exIdx+1}`).classList.add('open');
+    
+    // Auto-Advance Logic
+    const allChecked = ex.sets.every(s => s.checked);
+    if (allChecked && exIdx < activeSession.exercises.length - 1) {
+      openExIndices = openExIndices.filter(i => i !== exIdx); // Kapat
+      if (!openExIndices.includes(exIdx + 1)) openExIndices.push(exIdx + 1); // Sıradakini aç
+      persistSession(); renderActiveWorkout(); // Komple yenile
+      return; 
+    }
   }
   persistSession(); refreshSetRow(exIdx, setIdx);
   document.getElementById(`ex-set-count-${exIdx}`).textContent = `${activeSession.exercises[exIdx].sets.filter(s=>s.checked).length}/${activeSession.exercises[exIdx].sets.length} Set`;
@@ -911,7 +930,9 @@ function refreshSetRow(exIdx, setIdx){
   tempDiv.innerHTML = renderSetRow(exIdx, setIdx, activeSession.exercises[exIdx].sets[setIdx]);
   container.replaceChild(tempDiv.firstElementChild, document.getElementById(`row-${exIdx}-${setIdx}`));
 }
+
 function addSetToActive(exIdx){
+  haptic();
   const ex = activeSession.exercises[exIdx];
   const lastSet = ex.sets[ex.sets.length-1];
   ex.sets.push({ type: '1', kg: lastSet?lastSet.kg:'', reps: lastSet?lastSet.reps:'', prevKg:'', prevReps:'', checked:false });
@@ -933,6 +954,34 @@ function getMaxValForExercise(exName, trackType){
   return max;
 }
 
+// --- AD-HOC EXERCISE MODAL ---
+function openAdHocModal() { haptic(); document.getElementById('adhoc-modal').classList.add('open'); }
+function closeAdHocModal() { document.getElementById('adhoc-modal').classList.remove('open'); }
+function saveAdHocExercise() {
+  haptic();
+  const name = document.getElementById('adhoc-name').value || 'İsimsiz Hareket';
+  const setsCount = parseInt(document.getElementById('adhoc-sets').value) || 3;
+  const reps = document.getElementById('adhoc-reps').value || '10';
+  const type = document.getElementById('adhoc-type').value;
+  
+  const currentSets = Array.from({length: setsCount}, () => {
+    return { type: '1', kg: '', reps: reps, prevKg: '', prevReps: '', checked: false };
+  });
+
+  const newEx = { id: 'adhoc-'+Date.now(), name: name, muscle: 'Diğer', trackType: type, defaultReps: reps, sessionNote: '', sets: currentSets };
+  activeSession.exercises.push(newEx);
+  
+  // Automatically open the newly added exercise
+  openExIndices.push(activeSession.exercises.length - 1);
+  
+  persistSession(); closeAdHocModal(); renderActiveWorkout();
+  showToast("Hareket Eklendi!");
+  
+  // Temizle
+  document.getElementById('adhoc-name').value = '';
+}
+
+
 // --- REST TIMER ---
 let restTimerInterval = null; let restTargetMs = 0;
 function startRestTimer(seconds){
@@ -945,8 +994,8 @@ function startRestTimer(seconds){
     else { updateRestTimerUI(); }
   }, 1000);
 }
-function adjustRestTimer(sec){ restTargetMs += (sec * 1000); if(restTargetMs < Date.now()) restTargetMs = Date.now(); updateRestTimerUI(); }
-function stopRestTimer(){ clearInterval(restTimerInterval); document.getElementById('rest-timer-bar').classList.remove('show'); }
+function adjustRestTimer(sec){ haptic(); restTargetMs += (sec * 1000); if(restTargetMs < Date.now()) restTargetMs = Date.now(); updateRestTimerUI(); }
+function stopRestTimer(){ haptic(); clearInterval(restTimerInterval); document.getElementById('rest-timer-bar').classList.remove('show'); }
 function updateRestTimerUI(){
   const remainingSec = Math.max(0, Math.ceil((restTargetMs - Date.now()) / 1000));
   const m = String(Math.floor(remainingSec / 60)).padStart(2, '0');
@@ -960,12 +1009,15 @@ function openNoteModal(exIdx){
   currentNoteExIdx = exIdx; const ex = activeSession.exercises[exIdx];
   document.getElementById('note-modal-title').textContent = ex.name + " (Notlar)";
   
-  let prevNote = null;
+  let prevLogDateStr = null; let prevNote = null;
   const prevLog = [...logs].reverse().find(l => l.exercises.some(e => e.id === ex.id && e.sessionNote));
-  if(prevLog) prevNote = prevLog.exercises.find(e => e.id === ex.id).sessionNote;
+  if(prevLog) {
+    prevNote = prevLog.exercises.find(e => e.id === ex.id).sessionNote;
+    prevLogDateStr = new Date(prevLog.date).toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'});
+  }
   
   const prevContainer = document.getElementById('prev-note-container');
-  if(prevNote){ prevContainer.style.display = 'block'; prevContainer.textContent = "💡 Geçen antrenman notun: " + prevNote; } 
+  if(prevNote){ prevContainer.style.display = 'block'; prevContainer.textContent = `📅 ${prevLogDateStr}: "${prevNote}"`; } 
   else { prevContainer.style.display = 'none'; }
   
   document.getElementById('current-session-note').value = ex.sessionNote || '';
@@ -973,6 +1025,7 @@ function openNoteModal(exIdx){
 }
 function closeNoteModal(){ document.getElementById('note-modal').classList.remove('open'); }
 function saveSessionNote(){
+  haptic();
   const val = document.getElementById('current-session-note').value.trim();
   activeSession.exercises[currentNoteExIdx].sessionNote = val;
   persistSession(); closeNoteModal(); renderActiveWorkout(); showToast("Not kaydedildi ✓");
@@ -984,7 +1037,6 @@ function renderHistory(){
   if(logs.length === 0){ container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)">Henüz kayıt yok.</div>`; return; }
   
   container.innerHTML =[...logs].reverse().map(log => {
-    // Tam Tarih (Örn: 16 Mart 2026, Pazartesi)
     const logDate = new Date(log.date);
     const dateTitle = logDate.toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric', weekday:'long' });
     
@@ -1025,8 +1077,8 @@ function renderHistory(){
 }
 
 function deleteLog(e, logId){
-  e.stopPropagation();
-  if(confirm("Bu antrenman geçmişini silmek istediğine emin misin? (Geri alınamaz)")){
+  e.stopPropagation(); haptic();
+  if(confirm("Bu antrenman geçmişini silmek istediğine emin misin?")){
     logs = logs.filter(l => l.logId !== logId); saveData(logs);
     renderHistory(); showToast("Antrenman silindi 🗑️");
   }
@@ -1087,29 +1139,34 @@ function updateExerciseChart(){
   });
 }
 
-// --- PROGRAM TAB (YENİ KAPSÜL UI TASARIMI) ---
+// --- PROGRAM TAB (ACCORDION & CAPSULES) ---
+function toggleProgAccordion(dIdx) {
+  haptic();
+  if(openProgIndices.includes(dIdx)) openProgIndices = openProgIndices.filter(i => i !== dIdx);
+  else openProgIndices.push(dIdx);
+  renderProgram();
+}
+
 function renderProgram(){
   const container = document.getElementById('program-content');
   container.innerHTML = program.map((day, dIdx) => {
     const days =['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
     const targetStr = day.targetDay === -1 || day.targetDay === undefined ? 'Belirsiz/Opsiyonel' : days[day.targetDay];
-    
+    const isOpen = openProgIndices.includes(dIdx) ? 'open' : '';
+
     return `
-    <div class="card" style="padding:0; overflow:hidden">
-      <div class="ex-card-header" style="background:var(--accent-light)">
-        <div style="flex:1" id="prog-day-${dIdx}">
+    <div class="prog-card ${isOpen}" style="padding:0;">
+      <div class="prog-header" onclick="toggleProgAccordion(${dIdx})" style="background:var(--accent-light)">
+        <div style="flex:1">
           <div style="font-weight:800;color:var(--accent);font-size:16px">${day.name}</div>
-          
-          <!-- YENİ UI KAPSÜLLERİ (BADGES) BURADA -->
           <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
             <span class="badge" style="background:var(--info-light);color:var(--info);font-size:11px;padding:4px 8px;margin:0;">📅 ${targetStr}</span>
             ${day.note ? `<span class="badge" style="background:var(--warn-light);color:var(--warn);font-size:11px;padding:4px 8px;margin:0;">💡 ${day.note}</span>` : ''}
           </div>
-
         </div>
-        <button class="btn-icon" onclick="editDayName(${dIdx})">✏️</button>
+        <button class="btn-icon" onclick="event.stopPropagation(); haptic(); editDayName(${dIdx})">✏️</button>
       </div>
-      <div style="padding:12px">
+      <div class="prog-body" style="padding:12px">
         ${day.exercises.map((ex, eIdx) => {
            let typeLabel = ex.trackType==='time' ? 'Süreli' : (ex.trackType==='bw' ? 'Vücut Ağırlığı' : 'Ağırlık');
            return `
@@ -1123,22 +1180,22 @@ function renderProgram(){
           </div>
         `}).join('')}
         <button class="btn btn-danger-outline" style="border-style:dashed;margin-top:12px;padding:10px" onclick="addExerciseToProgram(${dIdx})">+ Hareket Ekle</button>
+        <button class="btn" style="background:var(--danger-light);color:var(--danger);margin-top:10px;" onclick="deleteDay(${dIdx})">Bu Günü Sil</button>
       </div>
-      <button class="btn" style="background:var(--danger-light);color:var(--danger);border-radius:0" onclick="deleteDay(${dIdx})">Bu Günü Sil</button>
     </div>
   `}).join('');
 }
 
-function addNewDay(){ program.push({ id:'d'+Date.now(), name:'Yeni Antrenman', note:'', targetDay: -1, exercises:[] }); saveProgram(program); renderProgram(); renderCalendar(); }
-function deleteDay(dIdx){ if(confirm("Tüm antrenman gününü silmek istiyor musun?")){ program.splice(dIdx, 1); saveProgram(program); renderProgram(); renderCalendar(); } }
+function addNewDay(){ haptic(); program.push({ id:'d'+Date.now(), name:'Yeni Antrenman', note:'', targetDay: -1, exercises:[] }); openProgIndices.push(program.length-1); saveProgram(program); renderProgram(); renderCalendar(); }
+function deleteDay(dIdx){ haptic(); if(confirm("Tüm antrenman gününü silmek istiyor musun?")){ program.splice(dIdx, 1); saveProgram(program); renderProgram(); renderCalendar(); } }
 
 function editDayName(dIdx){
   const day = program[dIdx];
   const container = document.getElementById(`prog-day-${dIdx}`);
   container.innerHTML = `
-    <div style="display:flex; flex-direction:column; gap:6px; padding-right:10px;">
-      <input type="text" id="edit-day-name-${dIdx}" value="${day.name}" placeholder="Gün Adı (Örn: Göğüs + Triceps)" class="form-input" style="padding:8px">
-      <input type="text" id="edit-day-note-${dIdx}" value="${day.note || ''}" placeholder="Kısa Not (Örn: Push)" class="form-input" style="padding:8px">
+    <div style="display:flex; flex-direction:column; gap:6px; padding-right:10px;" onclick="event.stopPropagation()">
+      <input type="text" id="edit-day-name-${dIdx}" value="${day.name}" placeholder="Gün Adı" class="form-input" style="padding:8px">
+      <input type="text" id="edit-day-note-${dIdx}" value="${day.note || ''}" placeholder="Kısa Not" class="form-input" style="padding:8px">
       <select id="edit-day-target-${dIdx}" class="form-select" style="padding:8px">
         <option value="-1" ${day.targetDay==-1?'selected':''}>Belirsiz / Opsiyonel</option>
         <option value="1" ${day.targetDay==1?'selected':''}>Pazartesi</option>
@@ -1154,6 +1211,7 @@ function editDayName(dIdx){
   `;
 }
 function saveDayName(dIdx){
+  haptic();
   const newName = document.getElementById(`edit-day-name-${dIdx}`).value;
   if(newName.trim()) program[dIdx].name = newName.trim();
   program[dIdx].note = document.getElementById(`edit-day-note-${dIdx}`).value.trim();
@@ -1162,13 +1220,13 @@ function saveDayName(dIdx){
 }
 
 function addExerciseToProgram(dIdx){
-  program[dIdx].exercises.push({ id:'new-'+Date.now(), name:'Yeni Hareket', sets:'3', reps:'10', muscle:'Göğüs', trackType:'weight', note:'' });
+  haptic(); program[dIdx].exercises.push({ id:'new-'+Date.now(), name:'Yeni Hareket', sets:'3', reps:'10', muscle:'Göğüs', trackType:'weight', note:'' });
   saveProgram(program); renderProgram(); openEditExerciseModal(dIdx, program[dIdx].exercises.length - 1);
 }
-function deleteExerciseFromProgram(dIdx, eIdx){ if(confirm("Hareketi silmek istediğine emin misin?")){ program[dIdx].exercises.splice(eIdx, 1); saveProgram(program); renderProgram(); } }
+function deleteExerciseFromProgram(dIdx, eIdx){ haptic(); if(confirm("Hareketi silmek istediğine emin misin?")){ program[dIdx].exercises.splice(eIdx, 1); saveProgram(program); renderProgram(); } }
 
 function openEditExerciseModal(dIdx, eIdx){
-  const ex = program[dIdx].exercises[eIdx];
+  haptic(); const ex = program[dIdx].exercises[eIdx];
   document.getElementById('edit-dIdx').value = dIdx; document.getElementById('edit-eIdx').value = eIdx;
   document.getElementById('edit-name').value = ex.name; document.getElementById('edit-sets').value = ex.sets; document.getElementById('edit-reps').value = ex.reps;
   document.getElementById('edit-type').value = ex.trackType || 'weight'; document.getElementById('edit-muscle').value = ex.muscle || 'Göğüs'; document.getElementById('edit-note').value = ex.note || '';
@@ -1176,7 +1234,7 @@ function openEditExerciseModal(dIdx, eIdx){
 }
 function closeModal(){ document.getElementById('edit-modal').classList.remove('open'); }
 function saveExerciseModal(){
-  const dIdx = document.getElementById('edit-dIdx').value; const eIdx = document.getElementById('edit-eIdx').value;
+  haptic(); const dIdx = document.getElementById('edit-dIdx').value; const eIdx = document.getElementById('edit-eIdx').value;
   program[dIdx].exercises[eIdx] = {
     id: program[dIdx].exercises[eIdx].id, name: document.getElementById('edit-name').value || 'İsimsiz Hareket',
     sets: document.getElementById('edit-sets').value || '3', reps: document.getElementById('edit-reps').value || '10',
@@ -1186,7 +1244,7 @@ function saveExerciseModal(){
 }
 
 function exportData(){
-  const data = { logs, program, settings };
+  haptic(); const data = { logs, program, settings };
   const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Antrenman_Yedek_${todayStr()}.json`;
   a.click(); showToast("Yedek indirildi 💾");
@@ -1206,9 +1264,10 @@ function importData(event){
   }; reader.readAsText(file);
 }
 function resetAllData(){
+  haptic();
   if(confirm("DİKKAT! Tüm geçmişin ve kendi programın kalıcı olarak SİLİNECEK.\nOnaylıyor musun?")){
     if(confirm("Gerçekten emin misin? Geri alınamaz!")){
-      localStorage.removeItem('wt_logs'); localStorage.removeItem('wt_prog'); localStorage.removeItem('wt_active_session'); localStorage.removeItem('wt_v4_migrated');
+      localStorage.removeItem('wt_logs'); localStorage.removeItem('wt_prog'); localStorage.removeItem('wt_active_session'); localStorage.removeItem('wt_v4_migrated_3');
       alert("Her şey sıfırlandı."); location.reload();
     }
   }
