@@ -701,12 +701,14 @@ function renderSetRow(exIdx, setIdx, set){
   const ex = activeSession.exercises[exIdx];
   const tClass = set.type==='W'?'type-w': set.type==='D'?'type-d': set.type==='F'?'type-f':'';
   const tLabel = set.type==='1' ? (setIdx+1) : set.type;
-  const isWeight = ex.trackType === 'weight'; const repPlaceholder = ex.trackType === 'time' ? 'sn' : (ex.defaultReps.split('-')[0]);
+  
+  const isWeight = ex.trackType === 'weight'; 
+  const repPlaceholder = ex.trackType === 'time' ? 'sn' : (ex.defaultReps.split('-')[0]);
   
   let currentVal = parseFloat(isWeight ? set.kg : set.reps) || 0;
   const prVal = getMaxValForExercise(ex.name, ex.trackType);
   
-  // YENİ: Sıkı PR (Hardcore PR) Mantığı - Bu seanstaki en yüksek seti bulur
+  // YENİ EKLENEN: O seanstaki en yüksek değeri bulma (Sıkı PR)
   let maxInSession = 0;
   ex.sets.forEach(s => {
     if(s.checked && s.type !== 'W') {
@@ -715,12 +717,12 @@ function renderSetRow(exIdx, setIdx, set){
     }
   });
   
-  // Kupa sadece: Eski PR'ı geçerse VE bu antrenmandaki en yüksek setse VE ısınma değilse verilir!
+  // KUPA ŞARTI: Eski PR'ı geçmeli VE bu seansın en yükseği olmalı VE ısınma seti olmamalı!
   const isPr = set.checked && prVal !== null && prVal > 0 && currentVal > prVal && currentVal >= maxInSession && set.type !== 'W';
   
   const focusAction = `onfocus="this.select(); setTimeout(() => this.scrollIntoView({behavior:'smooth', block:'center'}), 300);"`;
 
-  // YENİ: onchange yerine oninput kullanılarak veri kaçması engellendi
+  // onchange yerine oninput kullanıldı (Claude'un UX düzeltmesi)
   return `
     <div class="set-row ${set.checked ? 'completed' : ''}" id="row-${exIdx}-${setIdx}">
       <button class="set-type-btn ${tClass}" onclick="cycleSetType(${exIdx},${setIdx})">${tLabel}</button>
@@ -929,7 +931,7 @@ function renderProgram(){
     return `
     <div class="prog-card ${openProgIndices.includes(dIdx) ? 'open' : ''}" style="padding:0;">
       <div class="prog-header" onclick="toggleProgAccordion(${dIdx})" style="background:var(--accent-light)">
-        <div style="flex:1">
+        <div style="flex:1" id="prog-day-${dIdx}">
           <div style="font-weight:800;color:var(--accent);font-size:16px">${day.name}</div>
           <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
             <span class="badge" style="background:var(--info-light);color:var(--info);font-size:11px;padding:4px 8px;margin:0;">📅 ${targetStr}</span>
