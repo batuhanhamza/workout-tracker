@@ -566,12 +566,24 @@ if(savedSession){
   if(activeSession.isPaused){ document.getElementById('btn-pause').innerHTML = '▶️ Devam Et'; document.getElementById('workout-timer').textContent = "BEKLETİLDİ"; document.getElementById('workout-timer').classList.add('paused'); } 
   else startWorkoutClock();
   
-  let firstIncomplete = activeSession.exercises.findIndex(ex => !ex.sets.every(s => s.checked));
-  openExIndices =[firstIncomplete === -1 ? 0 : firstIncomplete];
+  // YENİ: Hafızada kayıtlı açık sekmeleri geri yükle
+  if(activeSession.openExIndices) {
+    openExIndices = activeSession.openExIndices;
+  } else {
+    let firstIncomplete = activeSession.exercises.findIndex(ex => !ex.sets.every(s => s.checked));
+    openExIndices =[firstIncomplete === -1 ? 0 : firstIncomplete];
+  }
   renderActiveWorkout();
 }
 
-function persistSession(){ if(isWorkoutActive) localStorage.setItem('wt_active_session', JSON.stringify(activeSession)); else localStorage.removeItem('wt_active_session'); }
+function persistSession(){ 
+  if(isWorkoutActive) {
+    activeSession.openExIndices = openExIndices; // Açık sekmeleri hafızaya ekle
+    localStorage.setItem('wt_active_session', JSON.stringify(activeSession)); 
+  } else {
+    localStorage.removeItem('wt_active_session'); 
+  }
+}
 
 function startWorkout(){
   haptic(); isWorkoutActive = true; const day = program.find(d => d.id === currentDayId);
@@ -690,22 +702,36 @@ function renderSetRow(exIdx, setIdx, set){
   const tClass = set.type==='W'?'type-w': set.type==='D'?'type-d': set.type==='F'?'type-f':'';
   const tLabel = set.type==='1' ? (setIdx+1) : set.type;
   const isWeight = ex.trackType === 'weight'; const repPlaceholder = ex.trackType === 'time' ? 'sn' : (ex.defaultReps.split('-')[0]);
+  
   let currentVal = parseFloat(isWeight ? set.kg : set.reps) || 0;
   const prVal = getMaxValForExercise(ex.name, ex.trackType);
-  const isPr = set.checked && prVal !== null && currentVal > prVal;
+  
+  // YENİ: Sıkı PR (Hardcore PR) Mantığı - Bu seanstaki en yüksek seti bulur
+  let maxInSession = 0;
+  ex.sets.forEach(s => {
+    if(s.checked && s.type !== 'W') {
+      let v = parseFloat(isWeight ? s.kg : s.reps) || 0;
+      if(v > maxInSession) maxInSession = v;
+    }
+  });
+  
+  // Kupa sadece: Eski PR'ı geçerse VE bu antrenmandaki en yüksek setse VE ısınma değilse verilir!
+  const isPr = set.checked && prVal !== null && prVal > 0 && currentVal > prVal && currentVal >= maxInSession && set.type !== 'W';
+  
   const focusAction = `onfocus="this.select(); setTimeout(() => this.scrollIntoView({behavior:'smooth', block:'center'}), 300);"`;
 
+  // YENİ: onchange yerine oninput kullanılarak veri kaçması engellendi
   return `
     <div class="set-row ${set.checked ? 'completed' : ''}" id="row-${exIdx}-${setIdx}">
       <button class="set-type-btn ${tClass}" onclick="cycleSetType(${exIdx},${setIdx})">${tLabel}</button>
       <div class="input-group ${!isWeight ? 'hidden' : ''}">
         <button class="btn-step" onclick="adjustInput(${exIdx},${setIdx},'kg',-0.5)">-</button>
-        <input type="number" inputmode="decimal" class="set-input" id="kg-${exIdx}-${setIdx}" placeholder="${set.prevKg||'0'}" value="${set.kg}" ${focusAction} onchange="updateSetData(${exIdx},${setIdx},'kg',this.value)" ${set.checked?'disabled':''}>
+        <input type="number" inputmode="decimal" class="set-input" id="kg-${exIdx}-${setIdx}" placeholder="${set.prevKg||'0'}" value="${set.kg}" ${focusAction} oninput="updateSetData(${exIdx},${setIdx},'kg',this.value)" ${set.checked?'disabled':''}>
         <button class="btn-step" onclick="adjustInput(${exIdx},${setIdx},'kg',0.5)">+</button>
       </div>
       <div class="input-group">
         <button class="btn-step" onclick="adjustInput(${exIdx},${setIdx},'reps',-1)">-</button>
-        <input type="number" inputmode="numeric" class="set-input" id="rep-${exIdx}-${setIdx}" placeholder="${set.prevReps||repPlaceholder}" value="${set.reps}" ${focusAction} onchange="updateSetData(${exIdx},${setIdx},'reps',this.value)" ${set.checked?'disabled':''}>
+        <input type="number" inputmode="numeric" class="set-input" id="rep-${exIdx}-${setIdx}" placeholder="${set.prevReps||repPlaceholder}" value="${set.reps}" ${focusAction} oninput="updateSetData(${exIdx},${setIdx},'reps',this.value)" ${set.checked?'disabled':''}>
         <button class="btn-step" onclick="adjustInput(${exIdx},${setIdx},'reps',1)">+</button>
       </div>
       <div style="position:relative"><button class="btn-check ${set.checked ? 'checked' : ''}" onclick="toggleSetCheck(${exIdx},${setIdx})">✓</button>${isPr ? `<div class="pr-badge">🏆</div>` : ``}</div>
