@@ -564,7 +564,16 @@ function renderCalendar() {
   }).join('');
   
   updateCalendarDetail();
-}
+  
+  // Seçili günü ekrana sığacak şekilde en mantıklı konuma kaydır
+  setTimeout(() => {
+    const activeCard = strip.querySelector('.cal-card.selected');
+    if (activeCard) {
+      // center yerine nearest kullanıyoruz!
+      activeCard.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+    }
+  }, 50);
+} // renderCalendar bitişi
 
 function selectCalDate(dateStr) {
   selectedCalendarDate = new Date(dateStr); selectedCalendarDate.setHours(0,0,0,0); renderCalendar();
