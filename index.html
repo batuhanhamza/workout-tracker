@@ -594,11 +594,13 @@ function startWorkout(){
     logId: 'log_' + Date.now(), dayId: day.id, dayName: day.name, dayNote: day.note, date: todayStr(), startTimeMs: Date.now(), totalPausedMs: 0, isPaused: false,
     exercises: day.exercises.map(ex => {
       const prevLog = [...logs].reverse().find(l => l.exercises.some(e => e.id === ex.id));
-      const prevSets = prevLog ? prevLog.exercises.find(e => e.id === ex.id).sets :[];
+      const prevEx = prevLog ? prevLog.exercises.find(e => e.id === ex.id) : null;
+      const prevSets = prevEx && prevEx.sets ? prevEx.sets :[];
       const currentSets = Array.from({length: parseInt(ex.sets)||3}, (_, i) => {
         const pSet = prevSets[i] || {}; return { type: '1', kg: pSet.kg||'', reps: pSet.reps || parseInt(ex.reps) || '', prevKg: pSet.kg||'', prevReps: pSet.reps||'', checked: false };
       });
-      return { id: ex.id, name: ex.name, muscle: ex.muscle, trackType: ex.trackType||'weight', defaultReps: ex.reps, sessionNote: '', sets: currentSets };
+      const pastMax = getMaxValForExercise(ex.name, ex.trackType||'weight');
+      return { id: ex.id, name: ex.name, muscle: ex.muscle, trackType: ex.trackType||'weight', defaultReps: ex.reps, sessionNote: '', pastMax: pastMax, sets: currentSets };
     })
   };
   openExIndices = [0]; persistSession(); startWorkoutClock(); renderActiveWorkout();
@@ -639,11 +641,13 @@ function finishWorkout(){
   activeSession.exercises.forEach(ex => {
     let maxValInSession = 0;
     ex.sets.forEach(s => {
-      if(ex.trackType === 'weight' && s.type !== 'W') totalVolume += (parseFloat(s.kg)||0) * (parseInt(s.reps)||0);
-      let val = parseFloat(ex.trackType==='weight' ? s.kg : s.reps) || 0;
-      if(val > maxValInSession) maxValInSession = val;
+      if(s.type !== 'W') { // Tüm W (Isınma) setlerini Hacim ve PR'dan dışla!
+        if(ex.trackType === 'weight') totalVolume += (parseFloat(s.kg)||0) * (parseInt(s.reps)||0);
+        let val = parseFloat(ex.trackType==='weight' ? s.kg : s.reps) || 0;
+        if(val > maxValInSession) maxValInSession = val;
+      }
     });
-    const pastMax = getMaxValForExercise(ex.name, ex.trackType);
+    const pastMax = ex.pastMax; // Performans için hafızadan (cache) çek
     if(pastMax !== null && maxValInSession > pastMax) prCount++;
   });
   
@@ -658,7 +662,7 @@ function toggleExAccordion(exIdx) { haptic(); if(openExIndices.includes(exIdx)) 
 function renderActiveWorkout(){
   document.getElementById('active-exercises').innerHTML = activeSession.exercises.map((ex, exIdx) => {
     let col2Label = ex.trackType==='weight' ? 'Kg' : '—'; let col3Label = ex.trackType==='time' ? 'Süre' : 'Tekrar';
-    const prVal = getMaxValForExercise(ex.name, ex.trackType);
+    const prVal = ex.pastMax;
     let prBadgeHtml = '';
     if(prVal !== null && prVal > 0){
        let prText = ex.trackType === 'time' ? `${prVal} sn` : (ex.trackType === 'bw' ? `${prVal} rep` : `${prVal} kg`);
@@ -706,7 +710,7 @@ function renderSetRow(exIdx, setIdx, set){
   const repPlaceholder = ex.trackType === 'time' ? 'sn' : (ex.defaultReps.split('-')[0]);
   
   let currentVal = parseFloat(isWeight ? set.kg : set.reps) || 0;
-  const prVal = getMaxValForExercise(ex.name, ex.trackType);
+  const prVal = ex.pastMax;
   
   // YENİ EKLENEN: O seanstaki en yüksek değeri bulma (Sıkı PR)
   let maxInSession = 0;
@@ -764,7 +768,20 @@ function refreshSetRow(exIdx, setIdx){ const container = document.getElementById
 function addSetToActive(exIdx){ haptic(); const ex = activeSession.exercises[exIdx]; const lastSet = ex.sets[ex.sets.length-1]; ex.sets.push({ type: '1', kg: lastSet?lastSet.kg:'', reps: lastSet?lastSet.reps:'', prevKg:'', prevReps:'', checked:false }); persistSession(); renderActiveWorkout(); }
 
 function getMaxValForExercise(exName, trackType){
-  let max = null; logs.forEach(log => { log.exercises.forEach(ex => { if(ex.name === exName){ ex.sets.forEach(s => { let val = parseFloat(trackType==='weight' ? s.kg : s.reps) || 0; if(max === null || val > max) max = val; }); } }); }); return max;
+  let max = null;
+  logs.forEach(log => {
+    log.exercises.forEach(ex => {
+      if(ex.name === exName){
+        ex.sets.forEach(s => {
+          if(s.type !== 'W') { // Geçmişteki ısınma setlerini rekor sayma!
+            let val = parseFloat(trackType==='weight' ? s.kg : s.reps) || 0;
+            if(max === null || val > max) max = val;
+          }
+        });
+      }
+    });
+  });
+  return max;
 }
 
 // --- AD-HOC EXERCISE MODAL (AKILLI LİSTE) ---
@@ -794,7 +811,10 @@ function saveAdHocExercise() {
   if(!name){ alert("Lütfen listeden seçin veya isim yazın!"); return; }
   const setsCount = parseInt(document.getElementById('adhoc-sets').value) || 3; const reps = document.getElementById('adhoc-reps').value || '10'; const type = document.getElementById('adhoc-type').value;
   const currentSets = Array.from({length: setsCount}, () => { return { type: '1', kg: '', reps: reps, prevKg: '', prevReps: '', checked: false }; });
-  activeSession.exercises.push({ id: 'adhoc-'+Date.now(), name: name, muscle: 'Diğer', trackType: type, defaultReps: reps, sessionNote: '', sets: currentSets });
+  
+  const pastMax = getMaxValForExercise(name, type);
+  activeSession.exercises.push({ id: 'adhoc-'+Date.now(), name: name, muscle: 'Diğer', trackType: type, defaultReps: reps, sessionNote: '', pastMax: pastMax, sets: currentSets });
+  
   openExIndices.push(activeSession.exercises.length - 1); persistSession(); closeAdHocModal(); renderActiveWorkout(); showToast("Hareket Eklendi!");
 }
 
@@ -859,7 +879,7 @@ function renderHistory(){
   const container = document.getElementById('history-content');
   if(logs.length === 0){ container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)">Henüz kayıt yok.</div>`; return; }
   container.innerHTML =[...logs].reverse().map(log => {
-    const dateTitle = new Date(log.date).toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric', weekday:'long' });
+    const dateTitle = new Date(log.date + 'T12:00:00').toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric', weekday:'long' });
     return `<div class="history-card">
       <div class="history-header" onclick="this.parentElement.classList.toggle('open')">
         <div>
@@ -907,15 +927,23 @@ function updateExerciseChart(){
   const dataPoints =[]; let chartLabel = '';
 
   if(exName === 'VOLUME'){
-    chartLabel = 'Toplam Hacim (kg)'; logs.slice(-15).forEach(l => { dataPoints.push({ date: new Date(l.date).toLocaleDateString('tr-TR',{day:'numeric',month:'short'}), val: l.volume||0 }); });
+    chartLabel = 'Toplam Hacim (kg)'; 
+    logs.slice(-15).forEach(l => { 
+      dataPoints.push({ date: new Date(l.date + 'T12:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'short'}), val: l.volume||0 }); 
+    });
   } else {
     let isTime = false;
     logs.forEach(l => {
       const ex = l.exercises.find(e => e.name === exName);
-      if(ex){ isTime = (ex.trackType === 'time'); let maxVal = 0; ex.sets.forEach(s => { let val = parseFloat(ex.trackType==='weight' ? s.kg : s.reps) || 0; if(val > maxVal) maxVal = val; }); dataPoints.push({ date: new Date(l.date).toLocaleDateString('tr-TR',{day:'numeric',month:'short'}), val: maxVal }); }
+      if(ex){ 
+        isTime = (ex.trackType === 'time'); let maxVal = 0; 
+        ex.sets.forEach(s => { let val = parseFloat(ex.trackType==='weight' ? s.kg : s.reps) || 0; if(val > maxVal) maxVal = val; }); 
+        dataPoints.push({ date: new Date(l.date + 'T12:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'short'}), val: maxVal }); 
+      }
     });
     chartLabel = isTime ? 'Maks Süre (sn)' : 'Maks Ağırlık / Tekrar';
   }
+
   const ctx = document.getElementById('ex-chart').getContext('2d');
   if(chartEx) chartEx.destroy();
   chartEx = new Chart(ctx, { type: 'line', data: { labels: dataPoints.map(d => d.date), datasets:[{ label: chartLabel, data: dataPoints.map(d => d.val), borderColor: '#5E5CE6', backgroundColor: '#5E5CE633', fill: true, tension: 0.3, pointBackgroundColor:'#5E5CE6' }] }, options: { responsive:true, maintainAspectRatio:false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false, ticks: { precision: 1 }, grid:{color:'rgba(0,0,0,0.05)'} }, x: { grid:{display:false} } } } });
@@ -985,7 +1013,18 @@ function saveExerciseModal(){
   saveProgram(program); renderProgram(); closeModal(); showToast("Kaydedildi ✓");
 }
 
-function exportData(){ haptic(); const data = { logs, program, settings }; const blob = new Blob([JSON.stringify(data)], {type: "application/json"}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Antrenman_Yedek_${todayStr()}.json`; a.click(); showToast("Yedek indirildi 💾"); }
+function exportData(){ 
+  haptic(); 
+  const data = { logs, program, settings }; 
+  const blob = new Blob([JSON.stringify(data)], {type: "application/json"}); 
+  const a = document.createElement('a'); 
+  const url = URL.createObjectURL(blob); 
+  a.href = url; 
+  a.download = `Antrenman_Yedek_${todayStr()}.json`; 
+  a.click(); 
+  setTimeout(() => URL.revokeObjectURL(url), 100); 
+  showToast("Yedek indirildi 💾"); 
+}
 function importData(event){
   const file = event.target.files[0]; if(!file) return; const reader = new FileReader();
   reader.onload = function(e) {
