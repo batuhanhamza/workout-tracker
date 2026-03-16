@@ -355,10 +355,39 @@ const DEFAULT_PROGRAM =[
 ];
 
 // --- CORE DATA & MIGRATION SYSTEM ---
-function loadData(){ return JSON.parse(localStorage.getItem('wt_logs') || '[]'); }
-function saveData(logs){ localStorage.setItem('wt_logs', JSON.stringify(logs)); }
-function loadProgram(){ return JSON.parse(localStorage.getItem('wt_prog') || JSON.stringify(DEFAULT_PROGRAM)); }
-function saveProgram(p){ localStorage.setItem('wt_prog', JSON.stringify(p)); }
+function loadData() {
+    try {
+        return JSON.parse(localStorage.getItem('wt_logs') || '[]');
+    } catch (e) {
+        alert('HATA: Geçmiş veriniz bozuk! Yedek yükleyin veya sıfırlayın.');
+        return [];
+    }
+}
+
+function saveData(logs) {
+    try {
+        localStorage.setItem('wt_logs', JSON.stringify(logs));
+    } catch (e) {
+        alert('HATA: Veri kaydedilemedi, cihaz hafızası dolu olabilir!');
+    }
+}
+
+function loadProgram() {
+    try {
+        return JSON.parse(localStorage.getItem('wt_prog') || JSON.stringify(DEFAULT_PROGRAM));
+    } catch (e) {
+        alert('HATA: Program veriniz bozuk! Varsayılan program açılıyor.');
+        return JSON.parse(JSON.stringify(DEFAULT_PROGRAM));
+    }
+}
+
+function saveProgram(p) {
+    try {
+        localStorage.setItem('wt_prog', JSON.stringify(p));
+    } catch (e) {
+        alert('HATA: Program kaydedilemedi!');
+    }
+}
 
 // 🛡️ V4.0 KUSURSUZ MIGRATION SCRIPT (0 Risk)
 function runV4Migration() {
