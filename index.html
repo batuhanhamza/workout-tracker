@@ -61,17 +61,18 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 .btn-icon:hover{color:var(--text);background:var(--surface2)}
 .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:var(--info-light);color:var(--info);margin-top:4px}
 
-/* Weekly Calendar UI */
+/* Weekly Calendar UI (V4.2 Gezinilebilir & Bugün Vurgulu) */
 .cal-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;scroll-snap-type:x mandatory}
 .cal-scroll::-webkit-scrollbar{display:none}
-.cal-card{min-width:90px;flex-shrink:0;scroll-snap-align:start;padding:12px;border-radius:14px;border:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all 0.2s}
+.cal-card{min-width:75px;flex:1;flex-shrink:0;scroll-snap-align:start;padding:12px 8px;border-radius:14px;border:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all 0.2s}
 .cal-card.selected{border-color:var(--accent);background:var(--accent-light);box-shadow:0 0 0 1px var(--accent)}
-.cal-card.today{border-bottom:3px solid var(--accent)}
+.cal-card.today{border-color:var(--accent); box-shadow:0 4px 12px rgba(94,92,230,0.15)}
 .cal-day{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
-.cal-date{font-size:20px;font-weight:700;font-family:'DM Mono',monospace}
-.cal-status{font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px}
+.cal-date{font-size:18px;font-weight:700;font-family:'DM Mono',monospace; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:50%;}
+.cal-date.today-date{background:var(--accent); color:#fff; box-shadow:0 2px 6px rgba(94,92,230,0.4)}
+.cal-status{font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px; min-height:18px;}
 .cal-detail-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:24px;}
-
+  
 /* Wrap Day Tabs */
 .day-tabs{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:8px;margin-bottom:12px;}
 .day-pill{padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);transition:all 0.2s;flex-grow:1;text-align:center;}
@@ -166,7 +167,11 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
   <div id="pre-workout-ui">
     
     <!-- WEEKLY CALENDAR -->
-    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">BU HAFTA</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <button class="btn-icon" onclick="changeWeek(-1)" style="padding:4px 12px; background:var(--surface2)">❮</button>
+      <div style="font-size:13px;font-weight:700;color:var(--text);cursor:pointer;letter-spacing:0.5px" onclick="resetWeek()" id="cal-week-title">BU HAFTA</div>
+      <button class="btn-icon" onclick="changeWeek(1)" style="padding:4px 12px; background:var(--surface2)">❯</button>
+    </div>
     <div class="cal-scroll" id="cal-strip"></div>
     <div class="cal-detail-box" id="cal-detail">Detaylar yükleniyor...</div>
 
@@ -485,9 +490,12 @@ document.querySelectorAll('.nav-item').forEach(btn => {
 const trDateOpts = {weekday:'long', day:'numeric', month:'long'};
 document.getElementById('topbar-sub').textContent = new Date().toLocaleDateString('tr-TR', trDateOpts);
 
-// --- CALENDAR LOGIC (V4.0) ---
-function getWeekDates() {
+// --- CALENDAR LOGIC (V4.2 Gezinilebilir) ---
+let weekOffset = 0; // 0: Bu hafta, -1: Geçen hafta, 1: Gelecek hafta
+
+function getWeekDates(offset = 0) {
   const now = new Date();
+  now.setDate(now.getDate() + (offset * 7)); // Haftayı kaydır
   const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
   const monday = new Date(now);
   monday.setDate(now.getDate() - dayOfWeek + 1);
@@ -498,30 +506,50 @@ function getWeekDates() {
   return week;
 }
 
+function changeWeek(dir) {
+  weekOffset += dir;
+  renderCalendar();
+}
+
+function resetWeek() {
+  weekOffset = 0;
+  selectedCalendarDate = new Date(); // Bugüne dön
+  renderCalendar();
+}
+
 function renderCalendar() {
   const strip = document.getElementById('cal-strip');
-  const week = getWeekDates();
-  const today = new Date();
-  today.setHours(0,0,0,0);
+  const week = getWeekDates(weekOffset);
+  const today = new Date(); today.setHours(0,0,0,0);
   selectedCalendarDate.setHours(0,0,0,0);
+  
+  // Başlığı Güncelle (Bu Hafta, Geçen Hafta vs.)
+  const titleEl = document.getElementById('cal-week-title');
+  if (weekOffset === 0) titleEl.textContent = "BU HAFTA";
+  else if (weekOffset === -1) titleEl.textContent = "GEÇEN HAFTA";
+  else if (weekOffset === 1) titleEl.textContent = "GELECEK HAFTA";
+  else {
+    const m1 = week[0].toLocaleDateString('tr-TR', {month:'short', day:'numeric'});
+    const m2 = week[6].toLocaleDateString('tr-TR', {month:'short', day:'numeric'});
+    titleEl.textContent = `${m1} - ${m2}`;
+  }
   
   strip.innerHTML = week.map(date => {
     date.setHours(0,0,0,0);
     const dateS = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
     const dayNames =['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
     
-    // Check Logs (Done)
     const doneLogs = logs.filter(l => l.date === dateS);
     const isDone = doneLogs.length > 0;
-    
-    // Check Plan
     const plan = program.find(p => p.targetDay === date.getDay());
+    
+    // Geçmişte yapmadıysan plan (mavi nokta) silinir, temiz kalır!
     const isFutureOrToday = date >= today;
     const isPlanned = plan && isFutureOrToday && !isDone;
     
-    let statusHtml = '-';
-    if(isDone) statusHtml = `<span style="color:var(--success)">✅${doneLogs.length>1?' x'+doneLogs.length:''}</span>`;
-    else if(isPlanned) statusHtml = `<span style="color:var(--info)">🔵</span>`;
+    let statusHtml = '<span style="color:var(--muted); opacity:0.3">-</span>';
+    if(isDone) statusHtml = `<span style="color:var(--success); font-size:14px">✅${doneLogs.length>1?`<span style="font-size:10px;margin-left:2px">x${doneLogs.length}</span>`:''}</span>`;
+    else if(isPlanned) statusHtml = `<span style="color:var(--info); font-size:10px">🔵</span>`;
     
     const isSelected = date.getTime() === selectedCalendarDate.getTime();
     const isToday = date.getTime() === today.getTime();
@@ -529,7 +557,7 @@ function renderCalendar() {
     return `
       <div class="cal-card ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}" onclick="selectCalDate('${dateS}')">
         <div class="cal-day">${dayNames[date.getDay()]}</div>
-        <div class="cal-date">${date.getDate()}</div>
+        <div class="cal-date ${isToday ? 'today-date' : ''}">${date.getDate()}</div>
         <div class="cal-status">${statusHtml}</div>
       </div>
     `;
@@ -539,9 +567,7 @@ function renderCalendar() {
 }
 
 function selectCalDate(dateStr) {
-  selectedCalendarDate = new Date(dateStr);
-  selectedCalendarDate.setHours(0,0,0,0);
-  renderCalendar();
+  selectedCalendarDate = new Date(dateStr); selectedCalendarDate.setHours(0,0,0,0); renderCalendar();
 }
 
 function updateCalendarDetail() {
@@ -553,18 +579,18 @@ function updateCalendarDetail() {
   const plan = program.find(p => p.targetDay === selectedCalendarDate.getDay());
   
   const titleDate = selectedCalendarDate.toLocaleDateString('tr-TR', trDateOpts);
-  let html = `<div style="font-weight:700; margin-bottom:8px; border-bottom:1px solid var(--surface2); padding-bottom:8px;">📅 ${titleDate}</div>`;
+  let html = `<div style="font-weight:700; margin-bottom:8px; border-bottom:1px solid var(--surface2); padding-bottom:8px; color:var(--text)">📅 ${titleDate}</div>`;
   
   if(doneLogs.length > 0){
     doneLogs.forEach(l => {
-      html += `<div style="margin-bottom:6px"><span style="color:var(--success)">✅ Yapılan:</span> <b>${l.dayName}</b> <span style="font-size:12px;color:var(--muted)">(${l.duration||0} dk, ${l.volume||0} kg)</span></div>`;
+      html += `<div style="margin-bottom:6px; font-size:14px"><span style="color:var(--success)">✅ Yapılan:</span> <b>${l.dayName}</b> <span style="font-size:12px;color:var(--muted)">(${l.duration||0} dk, ${l.volume||0} kg)</span></div>`;
     });
   } else {
     if(selectedCalendarDate < today) {
-      html += `<div style="color:var(--muted)">❌ Antrenman girilmedi.</div>`;
+      html += `<div style="color:var(--muted); font-size:14px">❌ Antrenman girilmedi.</div>`;
     } else {
-      if(plan) html += `<div><span style="color:var(--info)">🔵 Planlanan:</span> <b>${plan.name}</b></div>`;
-      else html += `<div style="color:var(--muted)">Boş (Dinlenme)</div>`;
+      if(plan) html += `<div style="font-size:14px"><span style="color:var(--info)">🔵 Planlanan:</span> <b>${plan.name}</b></div>`;
+      else html += `<div style="color:var(--muted); font-size:14px">Boş (Dinlenme)</div>`;
     }
   }
   box.innerHTML = html;
