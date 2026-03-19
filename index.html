@@ -119,6 +119,8 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 /* Rest Timer Overlay */
 .rest-timer-bar{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);width:90%;max-width:400px;background:var(--surface);border:2px solid var(--accent);border-radius:30px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-float);z-index:200;opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none; overflow:hidden;}
 .rest-timer-bar.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:all}
+.rest-timer-bar.urgent{border-color:var(--danger) !important; animation:pulse-border 0.6s ease-in-out infinite;}
+@keyframes pulse-border{0%,100%{box-shadow:var(--shadow-float)} 50%{box-shadow:0 0 0 6px rgba(255,59,48,0.25), var(--shadow-float)}}  
 .rt-progress-bar{position:absolute; bottom:0; left:0; height:4px; background:var(--success); width:100%; border-radius:0 0 30px 30px;}
 .rt-time{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--accent)}
 .btn-rt{background:var(--surface2);border:none;padding:8px 14px;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;color:var(--text); touch-action:manipulation;}
@@ -431,15 +433,15 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 <script>
 // --- IŞIK HIZINDA BUTON HİSSİYATI (0ms Gecikme) ---
 document.addEventListener('touchstart', function(e) {
-  let btn = e.target.closest('.btn, .btn-icon, .btn-step, .btn-check, .set-type-btn, .cal-card, .day-pill');
+  let btn = e.target.closest('.btn, .btn-icon, .btn-step, .btn-check, .set-type-btn, .cal-card, .day-pill, .btn-rt');
   if(btn) btn.classList.add('active-touch');
 }, {passive: true});
 document.addEventListener('touchend', function(e) {
-  let btn = e.target.closest('.btn, .btn-icon, .btn-step, .btn-check, .set-type-btn, .cal-card, .day-pill');
+  let btn = e.target.closest('.btn, .btn-icon, .btn-step, .btn-check, .set-type-btn, .cal-card, .day-pill, .btn-rt');
   if(btn) setTimeout(() => btn.classList.remove('active-touch'), 50);
 }, {passive: true});
 document.addEventListener('touchcancel', function(e) {
-  let btn = e.target.closest('.btn, .btn-icon, .btn-step, .btn-check, .set-type-btn, .cal-card, .day-pill');
+  let btn = e.target.closest('.btn, .btn-icon, .btn-step, .btn-check, .set-type-btn, .cal-card, .day-pill, .btn-rt');
   if(btn) btn.classList.remove('active-touch');
 }, {passive: true});
 
@@ -511,7 +513,7 @@ function fireConfetti() {
       background: ${color};
       border-radius: ${shape === 'circle' ? '50%' : '1px'};
       left: 50%;
-      bottom: 20%;
+      bottom: 0%;
       pointer-events: none;
       z-index: 9999;
     `;
@@ -530,21 +532,18 @@ function fireConfetti() {
     const wobble = (Math.random() - 0.5) * 0.5;
     let frame = 0;
     const maxFrames = 150 + Math.floor(Math.random() * 60);
-    const delay = Math.random() * 150;
 
-    setTimeout(() => {
-      const tick = setInterval(() => {
-        frame++;
-        vy += gravity; // Yerçekimiyle yavaşlayıp aşağı düşme
-        x += vx + Math.sin(frame * 0.1) * wobble; // Yaprak gibi süzülme (wobble)
-        y += vy;
-        rotation += rotSpeed;
-        const opacity = frame > maxFrames - 20 ? (maxFrames - frame) / 20 : 1;
-        el.style.transform = `translate(calc(-50% + ${x}px), ${y}px) rotate(${rotation}deg)`;
-        el.style.opacity = opacity;
-        if (frame >= maxFrames) { clearInterval(tick); el.remove(); }
-      }, 16); // 60 FPS akıcılık
-    }, delay);
+    const tick = setInterval(() => {
+      frame++;
+      vy += gravity; // Yerçekimiyle yavaşlayıp aşağı düşme
+      x += vx + Math.sin(frame * 0.1) * wobble; // Yaprak gibi süzülme (wobble)
+      y += vy;
+      rotation += rotSpeed;
+      const opacity = frame > maxFrames - 20 ? (maxFrames - frame) / 20 : 1;
+      el.style.transform = `translate(calc(-50% + ${x}px), ${y}px) rotate(${rotation}deg)`;
+      el.style.opacity = opacity;
+      if (frame >= maxFrames) { clearInterval(tick); el.remove(); }
+    }, 16); // 60 FPS akıcılık 
   }
 }
 
@@ -1106,14 +1105,17 @@ function startRestTimer(seconds){
     if(remainingMs <= 0){ stopRestTimer(); showToast("Süre Doldu! Sete Gir! 🚀"); if(navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]); } else { updateRestTimerUI(); }
   }, 100); // 100ms for smooth progress bar
 }
-function adjustRestTimer(sec){ haptic(); restTargetMs += (sec * 1000); restTotalMs += (sec * 1000); if(restTargetMs < Date.now()) restTargetMs = Date.now(); updateRestTimerUI(); }
-function stopRestTimer(){ haptic(); clearInterval(restTimerInterval); document.getElementById('rest-timer-bar').classList.remove('show'); }
+function adjustRestTimer(sec){ haptic(); restTargetMs += (sec * 1000); if(restTargetMs < Date.now()) restTargetMs = Date.now(); updateRestTimerUI(); }
+function stopRestTimer(){ haptic(); clearInterval(restTimerInterval); const bar = document.getElementById('rest-timer-bar'); bar.classList.remove('show'); bar.classList.remove('urgent'); }
 function updateRestTimerUI(){
   const remainingMs = restTargetMs - Date.now();
   const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
   document.getElementById('rt-display').textContent = `${String(Math.floor(remainingSec / 60)).padStart(2, '0')}:${String(remainingSec % 60).padStart(2, '0')}`;
   const pct = Math.max(0, Math.min(100, (remainingMs / restTotalMs) * 100));
   document.getElementById('rt-progress').style.width = pct + '%';
+  const bar = document.getElementById('rest-timer-bar');
+  if(remainingSec <= 5 && remainingSec > 0) bar.classList.add('urgent');
+  else bar.classList.remove('urgent');
 }
 
 // --- YENİ SESSION NOTE LOGIC (SİLİNEBİLİR GEÇMİŞ) ---
