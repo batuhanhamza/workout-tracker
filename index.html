@@ -112,6 +112,8 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 
 .btn-check{width:100%;height:38px;border-radius:var(--radius-sm);border:none;background:var(--surface2);color:var(--muted);font-size:16px;cursor:pointer; touch-action:manipulation; user-select:none; transition:transform 0.15s, background 0.2s;}
 .btn-check.checked{background:var(--success);color:#fff}
+@keyframes check-pop{0%{transform:scale(1)} 40%{transform:scale(1.3)} 70%{transform:scale(0.9)} 100%{transform:scale(1)}}
+.btn-check.just-checked{animation:check-pop 0.25s ease forwards;}
 
 .pr-badge{position:absolute;top:-8px;right:-5px;font-size:12px;background:#fff;border-radius:50%;padding:2px;box-shadow:0 2px 4px rgba(0,0,0,0.2);animation:pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)}
 @keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
@@ -1037,7 +1039,7 @@ function toggleSetCheck(exIdx, setIdx){
   haptic(); if(activeSession.isPaused) { showToast("Önce antrenmanı devam ettir!"); return; }
   const set = activeSession.exercises[exIdx].sets[setIdx]; const ex = activeSession.exercises[exIdx];
   if(set.checked) { set.checked = false; } else {
-    if(ex.trackType === 'weight' && !set.kg) set.kg = '0'; if(!set.reps) set.reps = '0'; set.checked = true; const cb = document.querySelector(`#row-${exIdx}-${setIdx} .btn-check`); if(cb){ cb.style.transform='scale(1.25)'; setTimeout(()=>cb.style.transform='',150); } startRestTimer(settings.defaultRest); 
+    if(ex.trackType === 'weight' && !set.kg) set.kg = '0'; if(!set.reps) set.reps = '0'; set.checked = true; const cb = document.querySelector(`#row-${exIdx}-${setIdx} .btn-check`); if(cb){ cb.classList.add('just-checked'); setTimeout(()=>cb.classList.remove('just-checked'),300); } startRestTimer(settings.defaultRest); 
     
     // Auto-Advance Logic
     const allChecked = ex.sets.every(s => s.checked);
@@ -1050,7 +1052,12 @@ function toggleSetCheck(exIdx, setIdx){
         persistSession(); renderActiveWorkout();
         setTimeout(() => {
           const nextCard = document.getElementById(`ex-card-${exIdx + 1}`);
-          if(nextCard) nextCard.scrollIntoView({behavior:'smooth', block:'start'});
+          if(nextCard) {
+            const topbar = document.querySelector('.topbar');
+            const offset = topbar ? topbar.offsetHeight + 12 : 80;
+            const y = nextCard.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({top: y, behavior: 'smooth'});
+          }
         }, 50);
       }, 500);
       return; 
