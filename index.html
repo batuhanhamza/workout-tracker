@@ -119,7 +119,7 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 /* Rest Timer Overlay */
 .rest-timer-bar{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);width:90%;max-width:400px;background:var(--surface);border:2px solid var(--accent);border-radius:30px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-float);z-index:200;opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none; overflow:hidden;}
 .rest-timer-bar.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:all}
-.rt-progress-bar{position:absolute; bottom:0; left:0; height:4px; background:var(--success); width:100%; transition:width 0.1s linear; border-radius:0 0 30px 30px;}
+.rt-progress-bar{position:absolute; bottom:0; left:0; height:4px; background:var(--success); width:100%; border-radius:0 0 30px 30px;}
 .rt-time{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--accent)}
 .btn-rt{background:var(--surface2);border:none;padding:8px 14px;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;color:var(--text); touch-action:manipulation;}
 
@@ -156,7 +156,7 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--text);color:var(--bg);padding:12px 24px;border-radius:30px;font-size:14px;font-weight:600;z-index:500;opacity:0;transition:all 0.3s;pointer-events:none;box-shadow:var(--shadow-float)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-.filter-chip{padding:6px 12px; border-radius:20px; border:1px solid var(--border); font-size:12px; font-weight:600; color:var(--muted); cursor:pointer; background:var(--surface); transition:all 0.2s}
+.filter-chip{padding:6px 12px; border-radius:20px; border:1px solid var(--border); font-size:12px; font-weight:600; color:var(--muted); cursor:pointer; background:var(--surface); transition:all 0.2s; white-space:nowrap;}
 .filter-chip.active{background:var(--accent); color:#fff; border-color:var(--accent)}
 
 .confetti-particle { position:fixed; bottom:20px; left:50%; width:10px; height:10px; z-index:9999; pointer-events:none; border-radius:50%; }
@@ -495,26 +495,56 @@ function haptic() { if (navigator.vibrate) navigator.vibrate(40); }
   
 // --- HAPTIC & CONFETTI ---
 function fireConfetti() {
-  const colors =['#5E5CE6', '#34C759', '#FF9500', '#FF3B30', '#32ADE6'];
-  for(let i=0; i<60; i++) {
-    const conf = document.createElement('div');
-    conf.className = 'confetti-particle';
-    conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    document.body.appendChild(conf);
-    
-    // X ekseninde sağa/sola rastgele dağılım (-150px ile +150px arası)
-    const tx = (Math.random() - 0.5) * 300; 
-    // Y ekseninde EKSİ yöne (Yukarı) sert fışkırma
-    const ty = -(Math.random() * 300 + 200); 
+  const colors =['#5E5CE6','#34C759','#FF9500','#FF3B30','#32ADE6','#FFD60A','#FF6B9D'];
+  const shapes = ['square', 'rect', 'circle'];
 
-    conf.animate([
-      { transform: `translate(0, 0) scale(1)`, opacity: 1 },
-      { transform: `translate(${tx}px, ${ty}px) scale(1.2) rotate(${Math.random()*360}deg)`, opacity: 1, offset: 0.4 },
-      // Yerçekimiyle ekranın en altına (100vh) düşüş
-      { transform: `translate(${tx + (tx>0?50:-50)}px, 100vh) scale(0.8) rotate(${Math.random()*720}deg)`, opacity: 0 }
-    ], { duration: 2000 + Math.random()*1000, easing: 'cubic-bezier(.25,.8,.25,1)', fill: 'forwards' });
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    const shape = shapes[Math.floor(Math.random() * shapes.length)];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size = 6 + Math.random() * 8;
+
+    el.style.cssText = `
+      position: fixed;
+      width: ${shape === 'rect' ? size * 2.5 : size}px;
+      height: ${size}px;
+      background: ${color};
+      border-radius: ${shape === 'circle' ? '50%' : '1px'};
+      left: 50%;
+      bottom: 20%;
+      pointer-events: none;
+      z-index: 9999;
+    `;
+    document.body.appendChild(el);
+
+    // Aşağıdan yelpaze gibi fırlama (Eksi ve Artı yönlere dağılım)
+    const angle = (Math.random() * 100 - 50) * Math.PI / 180;
+    const speed = 12 + Math.random() * 15;
+    const vx = Math.sin(angle) * speed;
+    let vy = -(Math.cos(angle) * speed); // Yukarı doğru sert fırlama
     
-    setTimeout(() => conf.remove(), 3000);
+    let x = 0, y = 0;
+    let rotation = Math.random() * 360;
+    const rotSpeed = (Math.random() - 0.5) * 15;
+    const gravity = 0.35 + Math.random() * 0.2;
+    const wobble = (Math.random() - 0.5) * 0.5;
+    let frame = 0;
+    const maxFrames = 150 + Math.floor(Math.random() * 60);
+    const delay = Math.random() * 150;
+
+    setTimeout(() => {
+      const tick = setInterval(() => {
+        frame++;
+        vy += gravity; // Yerçekimiyle yavaşlayıp aşağı düşme
+        x += vx + Math.sin(frame * 0.1) * wobble; // Yaprak gibi süzülme (wobble)
+        y += vy;
+        rotation += rotSpeed;
+        const opacity = frame > maxFrames - 20 ? (maxFrames - frame) / 20 : 1;
+        el.style.transform = `translate(calc(-50% + ${x}px), ${y}px) rotate(${rotation}deg)`;
+        el.style.opacity = opacity;
+        if (frame >= maxFrames) { clearInterval(tick); el.remove(); }
+      }, 16); // 60 FPS akıcılık
+    }, delay);
   }
 }
 
