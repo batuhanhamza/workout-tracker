@@ -1039,7 +1039,7 @@ function toggleSetCheck(exIdx, setIdx){
   haptic(); if(activeSession.isPaused) { showToast("Önce antrenmanı devam ettir!"); return; }
   const set = activeSession.exercises[exIdx].sets[setIdx]; const ex = activeSession.exercises[exIdx];
   if(set.checked) { set.checked = false; } else {
-    if(ex.trackType === 'weight' && !set.kg) set.kg = '0'; if(!set.reps) set.reps = '0'; set.checked = true; const cb = document.querySelector(`#row-${exIdx}-${setIdx} .btn-check`); if(cb){ cb.classList.add('just-checked'); setTimeout(()=>cb.classList.remove('just-checked'),300); } startRestTimer(settings.defaultRest); 
+    if(ex.trackType === 'weight' && !set.kg) set.kg = '0'; if(!set.reps) set.reps = '0'; set.checked = true; startRestTimer(settings.defaultRest); 
     
     // Auto-Advance Logic
     const allChecked = ex.sets.every(s => s.checked);
@@ -1065,6 +1065,8 @@ function toggleSetCheck(exIdx, setIdx){
   }
   persistSession(); refreshSetRow(exIdx, setIdx); calculateActiveVolume();
   document.getElementById(`ex-set-count-${exIdx}`).textContent = `${activeSession.exercises[exIdx].sets.filter(s=>s.checked).length}/${activeSession.exercises[exIdx].sets.length} Set`;
+  const cb2 = document.querySelector(`#row-${exIdx}-${setIdx} .btn-check`);
+  if(cb2 && set.checked){ cb2.classList.add('just-checked'); setTimeout(()=>cb2.classList.remove('just-checked'),300); }
 }
 function refreshSetRow(exIdx, setIdx){ const container = document.getElementById(`sets-container-${exIdx}`); const tempDiv = document.createElement('div'); tempDiv.innerHTML = renderSetRow(exIdx, setIdx, activeSession.exercises[exIdx].sets[setIdx]); container.replaceChild(tempDiv.firstElementChild, document.getElementById(`row-${exIdx}-${setIdx}`)); }
 function addSetToActive(exIdx){ haptic(); const ex = activeSession.exercises[exIdx]; const lastSet = ex.sets[ex.sets.length-1]; ex.sets.push({ type: '1', kg: lastSet?lastSet.kg:'', reps: lastSet?lastSet.reps:'', prevKg:'', prevReps:'', checked:false }); persistSession(); renderActiveWorkout(); }
