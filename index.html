@@ -860,6 +860,7 @@ function startWorkout(){
     })
   };
   openExIndices = [0]; persistSession(); startWorkoutClock(); renderActiveWorkout();
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 function startWorkoutClock(){
