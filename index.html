@@ -87,6 +87,7 @@ input, button, select, textarea {font-family:inherit; font-size:16px !important;
 
 /* Accordions */
 .ex-card, .prog-card {background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;transition:all 0.4s ease}
+.ex-card.completed-card{background:var(--success-light);border-color:rgba(52,199,89,0.3);}
 .ex-card-header, .prog-header {padding:16px;display:flex;justify-content:space-between;align-items:center;background:var(--surface);cursor:pointer;font-weight:600;font-size:15px; user-select:none;}
 .ex-card-body, .prog-body {display:none;padding:0 12px 12px;border-top:1px solid var(--border)}
 .ex-card.open .ex-card-body, .prog-card.open .prog-body {display:block}
@@ -977,9 +978,10 @@ function renderActiveWorkout(){
     const noteIconColor = ex.sessionNote ? 'var(--accent)' : (noteCount > 0 ? 'var(--text)' : 'var(--muted)');
     
     const isOpen = openExIndices.includes(exIdx) ? 'open' : '';
+    const allDone = ex.sets.length > 0 && ex.sets.every(s => s.checked);
 
     return `
-    <div class="ex-card ${isOpen}" id="ex-card-${exIdx}">
+    <div class="ex-card ${isOpen} ${allDone ? 'completed-card' : ''}" id="ex-card-${exIdx}">
       <div class="ex-card-header" onclick="toggleExAccordion(${exIdx})">
         <div style="flex:1; min-width:0;">
           <span style="font-size:15px; font-weight:700;">${ex.name}</span>
@@ -989,7 +991,7 @@ function renderActiveWorkout(){
           <button class="btn-icon" style="position:relative; padding:4px; font-size:22px; color:${noteIconColor}" onclick="event.stopPropagation(); haptic(); openNoteModal(${exIdx})">
             ${noteIcon}${noteBadgeHtml}
           </button>
-          <span style="font-size:12px;color:var(--accent)" id="ex-set-count-${exIdx}">${ex.sets.filter(s=>s.checked).length}/${ex.sets.length} Set</span>
+          <span style="font-size:12px;color:${allDone ? 'var(--success)' : 'var(--accent)'}" id="ex-set-count-${exIdx}">${ex.sets.filter(s=>s.checked).length}/${ex.sets.length} Set${allDone ? ' ✓' : ''}</span>
         </div>
       </div>
       <div class="ex-card-body">
